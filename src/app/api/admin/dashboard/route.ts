@@ -176,13 +176,14 @@ export async function GET(request: NextRequest) {
       totalUsers: users.length,
       totalCourses: courses.length,
       newUsersThisMonth: users.filter(u => {
+        if (!u || !u.createdAt) return false;
         const createdAt = new Date(u.createdAt);
         return createdAt >= thisMonth;
       }).length,
-      activeUsers: users.filter(u => u.status === 'active').length,
-      suspendedUsers: users.filter(u => u.status === 'suspended').length,
-      publishedCourses: courses.filter(c => c.status === 'Published').length,
-      draftCourses: courses.filter(c => c.status === 'Draft').length,
+      activeUsers: users.filter(u => u && (u as any).status === 'active').length,
+      suspendedUsers: users.filter(u => u && (u as any).status === 'suspended').length,
+      publishedCourses: courses.filter(c => (c as any).status === 'Published').length,
+      draftCourses: courses.filter(c => (c as any).status === 'Draft').length,
       totalEnrollments: progress.length,
       completedEnrollments: progress.filter(p => p.completed).length,
       averageCompletionRate: progress.length > 0 
