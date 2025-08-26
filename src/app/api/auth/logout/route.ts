@@ -5,7 +5,8 @@ import {cookies} from 'next/headers';
 export async function POST() {
   try {
     // Instruct the browser to delete the cookie
-    cookies().set('AuthToken', '', {
+    const cookieStore = await cookies();
+    cookieStore.set('AuthToken', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       path: '/',

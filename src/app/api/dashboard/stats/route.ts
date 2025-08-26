@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
 // Helper functions
 async function getMyCourseIds(db: any, instructorId: string): Promise<string[]> {
   const coursesSnapshot = await db.collection('courses').where('instructorId', '==', instructorId).get();
-  return coursesSnapshot.docs.map(doc => doc.id);
+  return coursesSnapshot.docs.map((doc: any) => doc.id);
 }
 
 async function getRecentActivity(db: any) {
@@ -141,7 +141,7 @@ async function getRecentActivity(db: any) {
     .limit(5)
     .get();
   
-  recentCourses.docs.forEach(doc => {
+  recentCourses.docs.forEach((doc: any) => {
     activities.push({
       type: 'course_created',
       title: `New course: ${doc.data().title}`,
@@ -157,14 +157,14 @@ async function getRecentActivity(db: any) {
     .get();
   
   for (const doc of recentEnrollments.docs) {
-    const enrollment = doc.data();
+    const enrollment = (doc as any).data();
     const courseDoc = await db.collection('courses').doc(enrollment.courseId).get();
     const userDoc = await db.collection('users').doc(enrollment.userId).get();
     
     if (courseDoc.exists && userDoc.exists) {
       activities.push({
         type: 'enrollment',
-        title: `${userDoc.data().displayName || userDoc.data().email} enrolled in ${courseDoc.data().title}`,
+        title: `${(userDoc as any).data().displayName || (userDoc as any).data().email} enrolled in ${(courseDoc as any).data().title}`,
         timestamp: enrollment.startedAt?.toDate?.() || enrollment.startedAt,
         data: { courseId: enrollment.courseId, userId: enrollment.userId }
       });
@@ -184,7 +184,7 @@ async function getFormateurRecentActivity(db: any, instructorId: string) {
     .limit(5)
     .get();
   
-  myCourses.docs.forEach(doc => {
+  myCourses.docs.forEach((doc: any) => {
     const course = doc.data();
     activities.push({
       type: 'course_updated',
@@ -204,14 +204,14 @@ async function getFormateurRecentActivity(db: any, instructorId: string) {
       .get();
     
     for (const doc of recentEnrollments.docs) {
-      const enrollment = doc.data();
+      const enrollment = (doc as any).data();
       const courseDoc = await db.collection('courses').doc(enrollment.courseId).get();
       const userDoc = await db.collection('users').doc(enrollment.userId).get();
       
       if (courseDoc.exists && userDoc.exists) {
         activities.push({
           type: 'student_enrollment',
-          title: `${userDoc.data().displayName || userDoc.data().email} enrolled in ${courseDoc.data().title}`,
+          title: `${(userDoc as any).data().displayName || (userDoc as any).data().email} enrolled in ${(courseDoc as any).data().title}`,
           timestamp: enrollment.startedAt?.toDate?.() || enrollment.startedAt,
           data: { courseId: enrollment.courseId, userId: enrollment.userId }
         });

@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const courses = coursesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    } as any));
 
     console.log(`Found ${courses.length} courses to process`);
 
@@ -63,10 +63,10 @@ export async function POST(request: NextRequest) {
 
     for (const course of courses) {
       try {
-        const currentImageUrl = course.imageUrl;
+        const currentImageUrl = (course as any).imageUrl;
         
         // Generate a new image URL based on the course title
-        const newImageUrl = generateCourseImageUrl(course.title);
+        const newImageUrl = generateCourseImageUrl((course as any).title);
 
         // Only update if the URL is different and not already a good image
         const shouldUpdate = !currentImageUrl || 
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
                            currentImageUrl.includes('placehold.co');
 
         if (shouldUpdate) {
-          console.log(`Generating image for course "${course.title}": ${currentImageUrl} -> ${newImageUrl}`);
+          console.log(`Generating image for course "${(course as any).title}": ${currentImageUrl} -> ${newImageUrl}`);
           
           const courseRef = db.collection('courses').doc(course.id);
           batch.update(courseRef, {
@@ -86,29 +86,29 @@ export async function POST(request: NextRequest) {
           generatedCount++;
           results.push({
             courseId: course.id,
-            title: course.title,
+            title: (course as any).title,
             oldUrl: currentImageUrl,
             newUrl: newImageUrl,
             status: 'generated'
           });
         } else {
-          console.log(`Skipping course "${course.title}" - already has a good image`);
+          console.log(`Skipping course "${(course as any).title}" - already has a good image`);
           skippedCount++;
           results.push({
             courseId: course.id,
-            title: course.title,
+            title: (course as any).title,
             oldUrl: currentImageUrl,
             newUrl: newImageUrl,
             status: 'skipped'
           });
         }
       } catch (error) {
-        console.error(`Error processing course "${course.title}":`, error);
+        console.error(`Error processing course "${(course as any).title}":`, error);
         errorCount++;
         results.push({
           courseId: course.id,
-          title: course.title,
-          error: error.message,
+          title: (course as any).title,
+          error: error instanceof Error ? error.message : 'Unknown error',
           status: 'error'
         });
       }
