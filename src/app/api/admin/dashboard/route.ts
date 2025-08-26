@@ -185,29 +185,29 @@ export async function GET(request: NextRequest) {
       publishedCourses: courses.filter(c => (c as any).status === 'Published').length,
       draftCourses: courses.filter(c => (c as any).status === 'Draft').length,
       totalEnrollments: progress.length,
-      completedEnrollments: progress.filter(p => p.completed).length,
+      completedEnrollments: progress.filter(p => (p as any).completed).length,
       averageCompletionRate: progress.length > 0 
-        ? Math.round((progress.filter(p => p.completed).length / progress.length) * 100)
+        ? Math.round((progress.filter(p => (p as any).completed).length / progress.length) * 100)
         : 0,
       // Community statistics
-      totalPosts: communityPosts.filter(p => !p.isDeleted).length,
-      totalComments: postComments.filter(c => !c.isDeleted).length,
-      totalMessages: messages.filter(m => !m.isDeleted).length,
-      pinnedPosts: communityPosts.filter(p => p.isPinned && !p.isDeleted).length,
-      deletedPosts: communityPosts.filter(p => p.isDeleted).length,
-      deletedComments: postComments.filter(c => c.isDeleted).length,
-      deletedMessages: messages.filter(m => m.isDeleted).length,
+      totalPosts: communityPosts.filter(p => !(p as any).isDeleted).length,
+      totalComments: postComments.filter(c => !(c as any).isDeleted).length,
+      totalMessages: messages.filter(m => !(m as any).isDeleted).length,
+      pinnedPosts: communityPosts.filter(p => (p as any).isPinned && !(p as any).isDeleted).length,
+      deletedPosts: communityPosts.filter(p => (p as any).isDeleted).length,
+      deletedComments: postComments.filter(c => (c as any).isDeleted).length,
+      deletedMessages: messages.filter(m => (m as any).isDeleted).length,
       // Enrollment request statistics
-      pendingEnrollmentRequests: enrollmentRequests.filter(r => r.status === 'pending').length,
-      approvedEnrollmentRequests: enrollmentRequests.filter(r => r.status === 'approved').length,
-      deniedEnrollmentRequests: enrollmentRequests.filter(r => r.status === 'denied').length,
+      pendingEnrollmentRequests: enrollmentRequests.filter(r => r && (r as any).status === 'pending').length,
+      approvedEnrollmentRequests: enrollmentRequests.filter(r => r && (r as any).status === 'approved').length,
+      deniedEnrollmentRequests: enrollmentRequests.filter(r => r && (r as any).status === 'denied').length,
     };
 
     // Calculate role distribution
     const roleDistribution = {
-      admin: users.filter(u => u.role === 'admin').length,
-      formateur: users.filter(u => u.role === 'formateur').length,
-      student: users.filter(u => u.role === 'student').length,
+      admin: users.filter(u => u && (u as any).role === 'admin').length,
+      formateur: users.filter(u => u && (u as any).role === 'formateur').length,
+      student: users.filter(u => u && (u as any).role === 'student').length,
     };
 
     // Calculate recent activity (last 7 days) - include all types of activities
@@ -217,84 +217,85 @@ export async function GET(request: NextRequest) {
 
     // User signups
     const recentUsers = users
-      .filter(u => new Date(u.createdAt) >= lastWeek)
+      .filter(u => u && u.createdAt && new Date(u.createdAt) >= lastWeek)
       .map(u => ({
         type: 'user_signup',
-        user: u.displayName,
+        user: (u as any).displayName,
         action: 'joined the platform',
-        time: u.createdAt,
-        role: u.role,
-        createdBy: u.createdBy,
+        time: (u as any).createdAt,
+        role: (u as any).role,
+        createdBy: (u as any).createdBy,
       }));
 
     // New posts
     const recentPosts = communityPosts
-      .filter(p => new Date(p.createdAt) >= lastWeek && !p.isDeleted)
+      .filter(p => new Date((p as any).createdAt) >= lastWeek && !(p as any).isDeleted)
       .map(p => ({
         type: 'post_created',
-        user: p.authorName,
+        user: (p as any).authorName,
         action: 'created a post',
-        time: p.createdAt,
+        time: (p as any).createdAt,
         role: 'community',
       }));
 
     // New comments
     const recentComments = postComments
-      .filter(c => new Date(c.createdAt) >= lastWeek && !c.isDeleted)
+      .filter(c => new Date((c as any).createdAt) >= lastWeek && !(c as any).isDeleted)
       .map(c => ({
         type: 'comment_created',
-        user: c.authorName,
+        user: (c as any).authorName,
         action: 'commented on a post',
-        time: c.createdAt,
+        time: (c as any).createdAt,
         role: 'community',
       }));
 
     // New courses
     const recentCourses = courses
-      .filter(c => new Date(c.createdAt) >= lastWeek)
+      .filter(c => new Date((c as any).createdAt) >= lastWeek)
       .map(c => ({
         type: 'course_created',
         user: 'Instructor',
-        action: `created course: ${c.title}`,
-        time: c.createdAt,
+        action: `created course: ${(c as any).title}`,
+        time: (c as any).createdAt,
         role: 'formateur',
       }));
 
     // New enrollment requests
     const recentEnrollmentRequests = enrollmentRequests
       .filter(r => {
+        if (!r) return false;
         try {
-          return new Date(r.createdAt) >= lastWeek;
+          return new Date((r as any).createdAt) >= lastWeek;
         } catch (error) {
-          console.warn('Error filtering enrollment request:', r.id, error);
+          console.warn('Error filtering enrollment request:', (r as any).id, error);
           return false;
         }
       })
       .map(r => ({
         type: 'enrollment_request',
-        user: r.studentName || 'Unknown Student', // Added default
-        action: `requested enrollment in "${r.courseTitle || 'Unknown Course'}"`, // Added default
-        time: r.createdAt,
+        user: (r as any).studentName || 'Unknown Student', // Added default
+        action: `requested enrollment in "${(r as any).courseTitle || 'Unknown Course'}"`, // Added default
+        time: (r as any).createdAt,
         role: 'student',
       }));
 
     // Combine all activities and sort by time
     recentActivity.push(...recentUsers, ...recentPosts, ...recentComments, ...recentCourses, ...recentEnrollmentRequests);
-    recentActivity.sort((a, b) => new Date(b.time) - new Date(a.time));
+    recentActivity.sort((a, b) => new Date((b as any).time).getTime() - new Date((a as any).time).getTime());
     recentActivity.splice(10); // Keep only the 10 most recent
 
     // Calculate top performing users (students with most completed courses)
     console.log('Calculating top performing users...');
     const studentProgress = progress
-      .filter(p => p.completed)
+      .filter(p => (p as any).completed)
       .reduce((acc, p) => {
-        acc[p.userId] = (acc[p.userId] || 0) + 1;
+        acc[(p as any).userId] = (acc[(p as any).userId] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
     const topPerformingUsers = Object.entries(studentProgress)
       .map(([userId, completedCount]) => {
-        const user = users.find(u => u.uid === userId);
+        const user = users.find(u => u && (u as any).uid === userId);
         return user ? {
           ...user,
           coursesCompleted: completedCount,
@@ -303,7 +304,7 @@ export async function GET(request: NextRequest) {
         } : null;
       })
       .filter(Boolean)
-      .sort((a, b) => b.coursesCompleted - a.coursesCompleted)
+      .sort((a, b) => (b as any).coursesCompleted - (a as any).coursesCompleted)
       .slice(0, 5);
 
     console.log('Admin dashboard data prepared successfully');

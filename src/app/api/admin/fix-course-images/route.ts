@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const courses = coursesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    } as any));
 
     console.log(`Found ${courses.length} courses to process`);
 
@@ -23,17 +23,17 @@ export async function POST(request: NextRequest) {
     const batch = db.batch();
 
     for (const course of courses) {
-      const currentImageUrl = course.imageUrl;
+      const currentImageUrl = (course as any).imageUrl;
       
       // Use the getCourseImageUrl function to determine the correct image URL
       const fixedImageUrl = getCourseImageUrl({
         imageUrl: currentImageUrl,
-        title: course.title
+        title: (course as any).title
       });
 
       // Only update if the URL has changed
       if (currentImageUrl !== fixedImageUrl) {
-        console.log(`Fixing course "${course.title}": ${currentImageUrl} -> ${fixedImageUrl}`);
+        console.log(`Fixing course "${(course as any).title}": ${currentImageUrl} -> ${fixedImageUrl}`);
         
         const courseRef = db.collection('courses').doc(course.id);
         batch.update(courseRef, {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         
         fixedCount++;
       } else {
-        console.log(`Skipping course "${course.title}" - image URL is already correct`);
+        console.log(`Skipping course "${(course as any).title}" - image URL is already correct`);
         skippedCount++;
       }
     }
