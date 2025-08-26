@@ -29,14 +29,14 @@ export async function POST(request: NextRequest) {
     const courses = coursesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    } as any));
 
     let updatedCount = 0;
     const batch = db.batch();
 
     // Check each course for blob URLs
     for (const course of courses) {
-      const currentImageUrl = course.imageUrl || '';
+      const currentImageUrl = (course as any).imageUrl || '';
       
       // Check if the current URL is a blob URL
       if (currentImageUrl.startsWith('blob:')) {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         // Get a proper placeholder image URL
         const fixedImageUrl = getCourseImageUrl({
           imageUrl: '',
-          title: course.title || 'Course'
+          title: (course as any).title || 'Course'
         });
         
         // Update the course with the fixed image URL

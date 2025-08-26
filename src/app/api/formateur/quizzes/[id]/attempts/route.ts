@@ -3,11 +3,12 @@ import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { db } = getAdminServices();
-    const quizId = params.id;
+    const quizId = id;
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     
@@ -52,11 +53,12 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { db } = getAdminServices();
-    const quizId = params.id;
+    const quizId = id;
     const { userId, courseId } = await request.json();
     
     if (!userId || !courseId) {

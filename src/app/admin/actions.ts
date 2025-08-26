@@ -68,7 +68,7 @@ export async function seedDatabaseAction(): Promise<string> {
         // --- Send Test Email to Admins ---
         const { auth } = getAdminServices();
         const adminUsers = await getAdminUserIds();
-        const adminEmails = (await Promise.all(adminUsers.map(id => auth.getUser(id)))).map(u => u.email).filter(e => e);
+        const adminEmails = (await Promise.all(adminUsers.map(id => auth.getUser(id)))).map(u => u.email).filter((e): e is string => !!e);
 
         for (const adminEmail of adminEmails) {
             await sendEmail({
@@ -229,7 +229,7 @@ export async function createUserAndAssignCoursesAction(prevState: any, formData:
 
     // --- Send Notification Email to Admins ---
     const adminUsers = await getAdminUserIds();
-    const adminEmails = (await Promise.all(adminUsers.map(id => auth.getUser(id)))).map(u => u.email).filter(e => e);
+    const adminEmails = (await Promise.all(adminUsers.map(id => auth.getUser(id)))).map(u => u.email).filter((e): e is string => !!e);
 
     for (const adminEmail of adminEmails) {
         await sendEmail({
@@ -369,11 +369,11 @@ export async function updateUserAction(params: UpdateUserParams) {
     const q = progressRef.where('userId', '==', uid);
     
     const existingProgressSnap = await q.get();
-    const existingProgress = existingProgressSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const existingCourseIds = new Set(existingProgress.map(p => p.courseId));
+    const existingProgress = existingProgressSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+    const existingCourseIds = new Set(existingProgress.map((p: any) => p.courseId));
     const newCourseIdsSet = new Set(courseIds);
 
-    const coursesToUnenroll = existingProgress.filter(p => !newCourseIdsSet.has(p.courseId));
+    const coursesToUnenroll = existingProgress.filter((p: any) => !newCourseIdsSet.has(p.courseId));
     const coursesToEnrollIds = courseIds.filter(id => !existingCourseIds.has(id));
 
     // Remove progress for unenrolled courses
@@ -434,7 +434,7 @@ export async function updateUserAction(params: UpdateUserParams) {
     // Send specific notifications for status changes
     if (status === 'suspended') {
       await notifyAdminsUserSuspended(userData, updaterId);
-    } else if (status === 'active' && targetUserRole === 'suspended') {
+    } else if (status === 'active') {
       await notifyAdminsUserActivated(userData, updaterId);
     }
 

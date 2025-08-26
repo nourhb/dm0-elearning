@@ -3,11 +3,12 @@ import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { db, auth } = getAdminServices();
-    const messageId = params.id;
+    const messageId = id;
     const { reason, adminUid } = await request.json();
     
     if (!adminUid) {

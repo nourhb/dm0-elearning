@@ -3,11 +3,11 @@ import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; attemptId: string } }
+  { params }: { params: Promise<{ id: string; attemptId: string }> }
 ) {
+  const { id: quizId, attemptId } = await params;
   try {
     const { db } = getAdminServices();
-    const { id: quizId, attemptId } = params;
     const { answers, totalTimeSpent } = await request.json();
     
     // Get the quiz to calculate scores

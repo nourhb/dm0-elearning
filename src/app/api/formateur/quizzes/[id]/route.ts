@@ -3,11 +3,12 @@ import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { db } = getAdminServices();
-    const quizId = params.id;
+    const quizId = id;
     
     // Get the specific quiz from the database
     const quizDoc = await db.collection('quizzes').doc(quizId).get();

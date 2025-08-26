@@ -43,7 +43,7 @@ export async function signup(prevState: any, formData: FormData): Promise<{messa
     // --- Send Notification Email & Create In-App Notification for Admins ---
     const { auth } = getAdminServices();
     const adminUsers = await getAdminUserIds();
-    const adminEmails = (await Promise.all(adminUsers.map(id => auth.getUser(id)))).map(u => u.email).filter(e => e);
+    const adminEmails = (await Promise.all(adminUsers.map(id => auth.getUser(id)))).map(u => u.email).filter((e): e is string => !!e);
 
     for (const adminEmail of adminEmails) {
         await sendEmail({
@@ -58,7 +58,8 @@ export async function signup(prevState: any, formData: FormData): Promise<{messa
             userId: adminId,
             title: 'New User Signup',
             message: `A new user, ${displayName} (${email}), has signed up as a ${role}.`,
-            link: `/admin`, 
+            link: `/admin`,
+            type: 'info'
         });
     }
 
