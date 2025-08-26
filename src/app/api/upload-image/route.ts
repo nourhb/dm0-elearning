@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (error) {
-        console.log(`❌ Approach failed: ${error.message}`);
+        console.log(`❌ Approach failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         continue;
       }
     }

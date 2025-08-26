@@ -154,7 +154,7 @@ function CommunityFeedContent() {
           uid: user.uid,
           email: user.email || '',
           displayName: user.displayName || 'Anonymous',
-          role: user.role || 'student',
+          role: (user.role as 'admin' | 'formateur' | 'student') || 'student',
           avatar: user.photoURL || null,
           bio: '',
           status: 'active',

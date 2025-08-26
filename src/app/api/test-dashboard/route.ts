@@ -61,10 +61,10 @@ export async function GET(request: NextRequest) {
       totalUsers: users.length,
       totalCourses: courses.length,
       totalEnrollments: progress.length,
-      completedEnrollments: progress.filter(p => p.completed).length,
-      adminUsers: users.filter(u => u.role === 'admin').length,
-      instructorUsers: users.filter(u => u.role === 'formateur').length,
-      studentUsers: users.filter(u => u.role === 'student').length,
+      completedEnrollments: progress.filter(p => (p as any).completed).length,
+      adminUsers: users.filter(u => (u as any).role === 'admin').length,
+      instructorUsers: users.filter(u => (u as any).role === 'formateur').length,
+      studentUsers: users.filter(u => (u as any).role === 'student').length,
     };
 
     return NextResponse.json({ 
