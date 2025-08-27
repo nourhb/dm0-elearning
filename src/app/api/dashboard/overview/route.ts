@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminServices } from '@/lib/firebase-admin';
+import { optimizedAPIs } from '@/lib/performance/optimized-api';
 import { cookies } from 'next/headers';
+import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,189 +20,128 @@ export async function GET(request: NextRequest) {
     const userRole = decodedToken.role || 'student';
     const userId = decodedToken.uid;
 
-    let dashboardData = {};
+    // Use optimized API for dashboard data
+    return optimizedAPIs.dashboard.execute(request, async (firebaseApp) => {
+      const { db } = firebaseApp;
+      
+      // Fetch all data in parallel for optimal performance
+      const [
+        statsPromise,
+        coursesPromise,
+        usersPromise,
+        enrollmentRequestsPromise
+      ] = await Promise.allSettled([
+        // Dashboard statistics
+        (async () => {
+          const statsSnapshot = await db.collection('courses').get();
+          const usersSnapshot = await db.collection('users').get();
+          const enrollmentsSnapshot = await db.collection('enrollments').get();
+          
+          const totalCourses = statsSnapshot.size;
+          const totalUsers = usersSnapshot.size;
+          const totalEnrollments = enrollmentsSnapshot.size;
+          
+          // Calculate role distribution
+          const roleDistribution = { admin: 0, formateur: 0, student: 0 };
+          usersSnapshot.docs.forEach((doc: any) => {
+            const userData = doc.data();
+            const role = userData.role || 'student';
+            roleDistribution[role as keyof typeof roleDistribution]++;
+          });
+          
+          return {
+            totalCourses,
+            totalUsers,
+            totalEnrollments,
+            roleDistribution,
+            recentActivity: [] // Simplified for performance
+          };
+        })(),
+        
+        // Courses data
+        (async () => {
+          let query = db.collection('courses');
+          
+          if (userRole === 'formateur') {
+            query = query.where('instructorId', '==', userId);
+          } else if (userRole === 'student') {
+            query = query.where('status', '==', 'published');
+          }
+          
+          const coursesSnapshot = await query.orderBy('createdAt', 'desc').limit(10).get();
+          return coursesSnapshot.docs.map((doc: any) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date(),
+            };
+          });
+        })(),
+        
+        // Users data (admin only)
+        (async () => {
+          if (userRole !== 'admin') return [];
+          
+          const usersSnapshot = await db.collection('users')
+            .orderBy('createdAt', 'desc')
+            .limit(20)
+            .get();
+            
+          return usersSnapshot.docs.map((doc: any) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date(),
+            };
+          });
+        })(),
+        
+        // Enrollment requests (admin only)
+        (async () => {
+          if (userRole !== 'admin') return [];
+          
+          const requestsSnapshot = await db.collection('enrollmentRequests')
+            .where('status', '==', 'pending')
+            .orderBy('createdAt', 'desc')
+            .limit(10)
+            .get();
+            
+          return requestsSnapshot.docs.map((doc: any) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              ...data,
+              createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date(),
+            };
+          });
+        })()
+      ]);
 
-    switch (userRole) {
-      case 'admin':
-        // Admin dashboard - all system data
-        const [
-          totalUsers,
-          totalCourses,
-          totalEnrollments,
-          pendingEnrollmentRequests,
-          pendingCourseApprovals,
-          totalRevenue,
-          allCourses,
-          allUsers,
-          enrollmentRequests
-        ] = await Promise.all([
-          db.collection('users').count().get(),
-          db.collection('courses').count().get(),
-          db.collection('progress').count().get(),
-          db.collection('enrollmentRequests').where('status', '==', 'pending').count().get(),
-          db.collection('courses').where('status', '==', 'pending_approval').count().get(),
-          db.collection('payments').get().then(snapshot => {
-            return snapshot.docs.reduce((sum, doc) => sum + (doc.data().amount || 0), 0);
-          }),
-          db.collection('courses').orderBy('createdAt', 'desc').limit(10).get(),
-          db.collection('users').orderBy('createdAt', 'desc').limit(10).get(),
-          db.collection('enrollmentRequests').where('status', '==', 'pending').orderBy('createdAt', 'desc').limit(10).get()
-        ]);
+      // Process results with error handling
+      const stats = statsPromise.status === 'fulfilled' ? statsPromise.value : {};
+      const courses = coursesPromise.status === 'fulfilled' ? coursesPromise.value : [];
+      const users = usersPromise.status === 'fulfilled' ? usersPromise.value : [];
+      const enrollmentRequests = enrollmentRequestsPromise.status === 'fulfilled' ? enrollmentRequestsPromise.value : [];
 
-        dashboardData = {
-          stats: {
-            totalUsers: totalUsers.data().count,
-            totalCourses: totalCourses.data().count,
-            totalEnrollments: totalEnrollments.data().count,
-            pendingEnrollmentRequests: pendingEnrollmentRequests.data().count,
-            pendingCourseApprovals: pendingCourseApprovals.data().count,
-            totalRevenue: totalRevenue,
-          },
-          courses: allCourses.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-            updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().updatedAt,
-          })),
-          users: allUsers.docs.map(doc => ({
-            uid: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-            updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().updatedAt,
-          })),
-          enrollmentRequests: enrollmentRequests.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-          })),
-          roleDistribution: allUsers.docs.reduce((acc: any, doc: any) => {
-            const role = doc.data().role || 'student';
-            acc[role] = (acc[role] || 0) + 1;
-            return acc;
-          }, {}),
-        };
-        break;
-
-      case 'formateur':
-        // Formateur dashboard - their courses and students
-        const [
-          myCourses,
-          myPublishedCourses,
-          myPendingCourses,
-          myRejectedCourses,
-          myStudents,
-          myCourseEnrollments,
-          myCoursesData
-        ] = await Promise.all([
-          db.collection('courses').where('instructorId', '==', userId).count().get(),
-          db.collection('courses').where('instructorId', '==', userId).where('status', '==', 'published').count().get(),
-          db.collection('courses').where('instructorId', '==', userId).where('status', '==', 'pending_approval').count().get(),
-          db.collection('courses').where('instructorId', '==', userId).where('status', '==', 'rejected').count().get(),
-          db.collection('progress').where('courseId', 'in', await getMyCourseIds(db, userId)).get().then(snapshot => {
-            const uniqueStudents = new Set(snapshot.docs.map(doc => doc.data().userId));
-            return uniqueStudents.size;
-          }),
-          db.collection('progress').where('courseId', 'in', await getMyCourseIds(db, userId)).count().get(),
-          db.collection('courses').where('instructorId', '==', userId).orderBy('createdAt', 'desc').get()
-        ]);
-
-        dashboardData = {
-          stats: {
-            totalCourses: myCourses.data().count,
-            publishedCourses: myPublishedCourses.data().count,
-            pendingCourses: myPendingCourses.data().count,
-            rejectedCourses: myRejectedCourses.data().count,
-            totalStudents: myStudents,
-            totalEnrollments: myCourseEnrollments.data().count,
-          },
-          courses: myCoursesData.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-            updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().updatedAt,
-          })),
-        };
-        break;
-
-      case 'student':
-        // Student dashboard - their enrollments and progress
-        const [
-          myEnrollments,
-          myCompletedCourses,
-          myInProgressCourses,
-          myTotalProgress,
-          myCertificates,
-          myEnrolledCourses,
-          myProgress
-        ] = await Promise.all([
-          db.collection('progress').where('userId', '==', userId).count().get(),
-          db.collection('progress').where('userId', '==', userId).where('completed', '==', true).count().get(),
-          db.collection('progress').where('userId', '==', userId).where('completed', '==', false).count().get(),
-          db.collection('progress').where('userId', '==', userId).get().then(snapshot => {
-            const enrollments = snapshot.docs.map(doc => doc.data());
-            return enrollments.reduce((sum, enrollment) => sum + (enrollment.progress || 0), 0) / Math.max(enrollments.length, 1);
-          }),
-          db.collection('certificates').where('userId', '==', userId).count().get(),
-          db.collection('progress').where('userId', '==', userId).get(),
-          db.collection('progress').where('userId', '==', userId).get()
-        ]);
-
-        // Get course details for enrolled courses
-        const enrolledCourseIds = myEnrolledCourses.docs.map(doc => doc.data().courseId);
-        const courseDetails = enrolledCourseIds.length > 0 ? 
-          await db.collection('courses').where('__name__', 'in', enrolledCourseIds).get() : 
-          { docs: [] };
-
-        dashboardData = {
-          stats: {
-            totalEnrollments: myEnrollments.data().count,
-            completedCourses: myCompletedCourses.data().count,
-            inProgressCourses: myInProgressCourses.data().count,
-            averageProgress: Math.round(myTotalProgress),
-            certificates: myCertificates.data().count,
-          },
-          enrolledCourses: courseDetails.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-            updatedAt: doc.data().updatedAt?.toDate?.() || doc.data().updatedAt,
-          })),
-          progress: myProgress.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-          })),
-        };
-        break;
-
-      default:
-        return NextResponse.json({ error: 'Invalid user role' }, { status: 400 });
-    }
-
-    // Add cache headers for better performance
-    const response = NextResponse.json({ 
-      success: true,
-      ...dashboardData 
+      return {
+        stats,
+        courses,
+        users,
+        enrollmentRequests,
+        roleDistribution: stats.roleDistribution || { admin: 0, formateur: 0, student: 0 }
+      };
+    }, {
+      cacheKey: `dashboard-overview-${userRole}-${userId}`,
+      userId
     });
-
-    // Cache based on data type
-    const cacheTime = userRole === 'admin' ? 30 : 60; // 30s for admin, 60s for others
-    response.headers.set('Cache-Control', `public, s-maxage=${cacheTime}, stale-while-revalidate=300`);
-
-    return response;
 
   } catch (error) {
     console.error('Error fetching dashboard overview:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch dashboard data' },
+      { status: 500 }
+    );
   }
-}
-
-// Helper function to get course IDs for a formateur
-async function getMyCourseIds(db: any, instructorId: string): Promise<string[]> {
-  const coursesSnapshot = await db.collection('courses')
-    .where('instructorId', '==', instructorId)
-    .select('__name__')
-    .get();
-  
-  return coursesSnapshot.docs.map(doc => doc.id);
 }
