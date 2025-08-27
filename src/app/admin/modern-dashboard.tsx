@@ -87,7 +87,7 @@ export function ModernAdminDashboard() {
       if (user?.uid) {
         try {
           setLoading(true);
-          const res = await authFetch('/api/dashboard/overview-simple');
+          const res = await authFetch('/api/dashboard/overview');
           const data = await res.json();
           
           setUsers(data.users || []);
@@ -210,7 +210,7 @@ export function ModernAdminDashboard() {
                                onClick={async () => {
                   try {
                     setLoading(true);
-                    const res = await authFetch('/api/dashboard/overview-simple');
+                    const res = await authFetch('/api/dashboard/overview');
                     const data = await res.json();
                     setUsers(data.users || []);
                     setCourses(data.courses || []);
