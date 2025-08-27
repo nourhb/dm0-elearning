@@ -28,7 +28,7 @@ export async function uploadToCloudinary(
   
   if (!cloudName || !uploadPreset) {
     console.warn('Cloudinary not configured. Using server-side upload as fallback.');
-    return uploadToServer(file, folder);
+    return await uploadToServer(file, folder);
   }
 
   return new Promise((resolve, reject) => {
@@ -107,7 +107,7 @@ export async function uploadMultipleToCloudinary(
   
   if (!cloudName || !uploadPreset) {
     console.warn('Cloudinary not configured. Using local file URLs as fallback.');
-    return files.map(file => createLocalFileResult(file));
+    return Promise.all(files.map(file => createLocalFileResult(file)));
   }
   
   const uploadPromises = files.map(file => uploadToCloudinary(file, folder, options));
@@ -144,12 +144,12 @@ async function uploadToServer(file: File, folder: UploadFolder): Promise<Cloudin
   } catch (error) {
     console.error('Server upload failed:', error);
     // Final fallback to data URL
-    return createLocalFileResult(file);
+    return await createLocalFileResult(file);
   }
 }
 
 // Fallback function for when Cloudinary is not configured
-function createLocalFileResult(file: File): CloudinaryUploadResult {
+async function createLocalFileResult(file: File): Promise<CloudinaryUploadResult> {
   const fileId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const fileType = file.type.startsWith('image/') ? 'image' : 
                    file.type.startsWith('video/') ? 'video' : 'file';
