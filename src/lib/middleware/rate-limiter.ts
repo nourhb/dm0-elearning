@@ -25,7 +25,7 @@ export async function rateLimitMiddleware(
   request: NextRequest,
   userId?: string
 ): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';
   const path = request.nextUrl.pathname;
   
@@ -36,7 +36,7 @@ export async function rateLimitMiddleware(
   let config = RATE_LIMIT_CONFIG.default;
   for (const [pattern, limitConfig] of Object.entries(RATE_LIMIT_CONFIG)) {
     if (pattern !== 'default' && path.includes(pattern)) {
-      config = limitConfig;
+      config = limitConfig as typeof RATE_LIMIT_CONFIG.default;
       break;
     }
   }
@@ -79,7 +79,7 @@ export class AdaptiveRateLimiter {
     request: NextRequest,
     userId?: string
   ): Promise<{ allowed: boolean; remaining: number; resetTime: number; adaptive?: boolean }> {
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     const identifier = userId ? `user:${userId}` : `ip:${ip}`;
     
     // Get user trust score

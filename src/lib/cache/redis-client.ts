@@ -13,8 +13,6 @@ const redisConfig = {
   connectTimeout: 10000,
   commandTimeout: 5000,
   // Connection pooling for high concurrency
-  maxRetriesPerRequest: 3,
-  retryDelayOnFailover: 100,
   enableReadyCheck: true,
   maxLoadingTimeout: 10000,
   // Cluster mode for horizontal scaling

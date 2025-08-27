@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
         courses,
         users,
         enrollmentRequests,
-        roleDistribution: stats.roleDistribution || { admin: 0, formateur: 0, student: 0 }
+        roleDistribution: (stats as any).roleDistribution || { admin: 0, formateur: 0, student: 0 }
       };
     }, {
       cacheKey: `dashboard-overview-${userRole}-${userId}`,

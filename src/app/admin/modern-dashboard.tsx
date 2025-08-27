@@ -116,8 +116,8 @@ export function ModernAdminDashboard() {
     totalCourses: courses.length,
     totalEnrollments: enrollmentRequests.length,
     activeUsers: users.filter(u => u.status === 'active').length,
-    publishedCourses: courses.filter(c => c.status === 'published').length,
-    pendingApprovals: courses.filter(c => c.status === 'pending_approval').length,
+    publishedCourses: courses.filter(c => c.status === 'Published').length,
+    pendingApprovals: courses.filter(c => c.status === 'Draft').length,
     totalRevenue: calculateTotalRevenue(),
     monthlyGrowth: calculateMonthlyGrowth(),
   };
@@ -390,11 +390,10 @@ export function ModernAdminDashboard() {
                 <div className="space-y-4">
                   {users.slice(0, 10).map((user) => (
                     <div key={user.uid} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
-                          <AvatarImage src={user.photoURL} />
-                          <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                                             <div className="flex items-center space-x-4">
+                         <Avatar>
+                           <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                         </Avatar>
                         <div>
                           <p className="font-medium">{user.displayName}</p>
                           <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -440,19 +439,19 @@ export function ModernAdminDashboard() {
                     <Card key={course.id} className="border-0 shadow-md hover:shadow-lg transition-shadow">
                       <CardContent className="p-4">
                         <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-lg">{course.title}</h3>
-                            <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
-                              {course.status}
-                            </Badge>
-                          </div>
+                                                     <div className="flex items-center justify-between">
+                             <h3 className="font-semibold text-lg">{course.title}</h3>
+                             <Badge variant={course.status === 'Published' ? 'default' : 'secondary'}>
+                               {course.status}
+                             </Badge>
+                           </div>
                           <p className="text-sm text-muted-foreground line-clamp-2">
                             {course.description}
                           </p>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">
-                              {course.instructorName || 'Unknown Instructor'}
-                            </span>
+                                                     <div className="flex items-center justify-between text-sm">
+                             <span className="text-muted-foreground">
+                               Instructor ID: {course.instructorId}
+                             </span>
                             <span className="font-medium">
                               {course.studentCount || 0} students
                             </span>
@@ -496,6 +495,8 @@ export function ModernAdminDashboard() {
       <CreateUserDialog
         isOpen={isCreateUserDialogOpen}
         setIsOpen={setIsCreateUserDialogOpen}
+        creatorId={user?.uid || ''}
+        creatorRole={(user?.role as 'admin' | 'formateur' | 'student') || 'admin'}
         onUserCreated={() => {
           setIsCreateUserDialogOpen(false);
           window.location.reload();
