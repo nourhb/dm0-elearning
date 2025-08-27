@@ -1,7 +1,9 @@
 
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 import { AppSidebar } from '@/components/dashboard/sidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Header } from '@/components/dashboard/header';
@@ -12,8 +14,24 @@ function AdminDashboardContent() {
 }
 
 export default function AdminPage() {
-  // TEMPORARY: Remove authentication checks to fix deployment issues
-  // The dashboard will work with static data from the API
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    } else if (!loading && user && user.role !== 'admin') {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return <div className="flex h-screen items-center justify-center"><p>Loading...</p></div>;
+  }
+
+  if (user.role !== 'admin') {
+    return <div className="flex h-screen items-center justify-center"><p>Access denied</p></div>;
+  }
 
   return (
     <SidebarProvider>

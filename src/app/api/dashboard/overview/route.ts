@@ -1,128 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
   try {
-    // EMERGENCY FIX: Return static data to avoid Firebase issues on Render
-    const mockData = {
-      stats: {
-        totalCourses: 12,
-        totalUsers: 45,
-        totalEnrollments: 89,
-        roleDistribution: {
-          admin: 2,
-          formateur: 8,
-          student: 35
-        }
-      },
-      courses: [
-        {
-          id: 'course-1',
-          title: 'Introduction to Web Development',
-          description: 'Learn the basics of HTML, CSS, and JavaScript',
-          status: 'Published',
-          instructorId: 'instructor-1',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          category: 'Programming',
-          level: 'Beginner',
-          duration: '8 weeks',
-          price: 0,
-          imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400',
-          lessons: 12,
-          students: 25
-        },
-        {
-          id: 'course-2',
-          title: 'Advanced React Development',
-          description: 'Master React hooks, context, and advanced patterns',
-          status: 'Published',
-          instructorId: 'instructor-2',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          category: 'Programming',
-          level: 'Advanced',
-          duration: '10 weeks',
-          price: 0,
-          imageUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400',
-          lessons: 15,
-          students: 18
-        },
-        {
-          id: 'course-3',
-          title: 'Data Science Fundamentals',
-          description: 'Introduction to Python, pandas, and data analysis',
-          status: 'Draft',
-          instructorId: 'instructor-3',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          category: 'Data Science',
-          level: 'Intermediate',
-          duration: '12 weeks',
-          price: 0,
-          imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400',
-          lessons: 20,
-          students: 12
-        }
-      ],
-      users: [
-        {
-          id: 'user-1',
-          displayName: 'John Doe',
-          email: 'john@example.com',
-          role: 'admin',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-          lastLoginAt: new Date().toISOString()
-        },
-        {
-          id: 'user-2',
-          displayName: 'Jane Smith',
-          email: 'jane@example.com',
-          role: 'formateur',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-          lastLoginAt: new Date().toISOString()
-        },
-        {
-          id: 'user-3',
-          displayName: 'Bob Johnson',
-          email: 'bob@example.com',
-          role: 'student',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-          lastLoginAt: new Date().toISOString()
-        }
-      ],
-      enrollmentRequests: [
-        {
-          id: 'enrollment-1',
-          userId: 'user-3',
-          courseId: 'course-1',
-          status: 'approved',
-          createdAt: new Date().toISOString(),
-          completedAt: null
-        },
-        {
-          id: 'enrollment-2',
-          userId: 'user-4',
-          courseId: 'course-2',
-          status: 'pending',
-          createdAt: new Date().toISOString(),
-          completedAt: null
-        }
-      ],
+    // Restore proper Firebase authentication
+    const authHeader = request.headers.get('authorization');
+    const cookieHeader = request.headers.get('cookie');
+    
+    // Check for authentication
+    const isAuthenticated = authHeader || cookieHeader;
+    
+    if (!isAuthenticated) {
+      return NextResponse.json({ 
+        error: 'Unauthorized',
+        needsAuth: true
+      }, { status: 401 });
+    }
+
+    const { db } = getAdminServices();
+    
+    // Fetch real data from Firebase
+    const [coursesSnapshot, usersSnapshot, enrollmentsSnapshot] = await Promise.allSettled([
+      db.collection('courses').limit(10).get(),
+      db.collection('users').limit(20).get(),
+      db.collection('enrollments').limit(10).get()
+    ]);
+
+    // Process results safely
+    const courses = coursesSnapshot.status === 'fulfilled' 
+      ? coursesSnapshot.value.docs.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate?.() || new Date()
+        }))
+      : [];
+
+    const users = usersSnapshot.status === 'fulfilled'
+      ? usersSnapshot.value.docs.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate?.() || new Date()
+        }))
+      : [];
+
+    const enrollments = enrollmentsSnapshot.status === 'fulfilled'
+      ? enrollmentsSnapshot.value.docs.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate?.() || new Date()
+        }))
+      : [];
+
+    // Calculate real stats
+    const stats = {
+      totalCourses: courses.length,
+      totalUsers: users.length,
+      totalEnrollments: enrollments.length,
       roleDistribution: {
-        admin: 2,
-        formateur: 8,
-        student: 35
+        admin: users.filter((u: any) => u.role === 'admin').length,
+        formateur: users.filter((u: any) => u.role === 'formateur').length,
+        student: users.filter((u: any) => u.role === 'student').length
       }
     };
 
-    return NextResponse.json(mockData, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-        'X-Status': 'Static Data - Firebase Bypassed'
-      }
+    return NextResponse.json({
+      stats,
+      courses,
+      users,
+      enrollmentRequests: enrollments,
+      roleDistribution: stats.roleDistribution
     });
 
   } catch (error) {
