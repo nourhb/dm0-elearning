@@ -5,6 +5,7 @@ import { AuthProvider } from '@/components/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ChunkReloader } from '@/components/chunk-reloader';
 import { I18nProvider } from '@/components/i18n-provider';
+import ErrorBoundary from '@/components/error-boundary';
 import './globals.css';
 // i18n is initialized on the client in AppLayoutClient
 import { Outfit, Manrope, DM_Sans } from 'next/font/google';
@@ -38,13 +39,15 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={`${outfit.variable} ${dmSans.variable} ${manrope.variable} font-body antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <I18nProvider>
-              <AuthProvider>
-                <ChunkReloader />
-                {children}
-                <Toaster />
-              </AuthProvider>
-            </I18nProvider>
+            <ErrorBoundary>
+              <I18nProvider>
+                <AuthProvider>
+                  <ChunkReloader />
+                  {children}
+                  <Toaster />
+                </AuthProvider>
+              </I18nProvider>
+            </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

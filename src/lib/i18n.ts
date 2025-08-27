@@ -21,9 +21,18 @@ if (!i18n.isInitialized) {
     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
       parse: (data: string) => {
-        const sanitized = data.replace(/^\uFEFF/, '').trim();
-        return JSON.parse(sanitized);
+        try {
+          const sanitized = data.replace(/^\uFEFF/, '').trim();
+          return JSON.parse(sanitized);
+        } catch (error) {
+          console.warn('Failed to parse translation file:', error);
+          return {};
+        }
       },
+    },
+    // Add error handling for failed loads
+    react: {
+      useSuspense: false,
     },
   });
 }
