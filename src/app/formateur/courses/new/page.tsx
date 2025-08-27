@@ -313,7 +313,7 @@ export default function CreateCoursePage() {
         <SidebarProvider>
             <div className="flex">
                 <AppSidebar />
-                <SidebarInset className="flex-1 flex flex-col">
+                <SidebarInset className="flex-1 flex flex-col md:ml-64">
                     <Header />
                     <main className="flex-1 overflow-y-auto">
                         <CreateCourseForm />
