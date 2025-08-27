@@ -18,6 +18,11 @@ if (!i18n.isInitialized) {
     supportedLngs: ['en', 'fr', 'ar'],
     nonExplicitSupportedLngs: true,
     interpolation: { escapeValue: false },
+    detection: {
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'language',
+    },
     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
       parse: (data: string) => {

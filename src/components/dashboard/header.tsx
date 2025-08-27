@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from "next-themes";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 import { collection, onSnapshot, query, where, doc, updateDoc } from 'firebase/firestore';
 import type { Notification } from '@/lib/types';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -388,10 +389,49 @@ export function Header() {
   const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const { toast } = useToast();
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-    localStorage.setItem('language', lng);
+  // Initialize language on component mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && i18n.language !== savedLanguage) {
+      changeLanguage(savedLanguage);
+    }
+    
+    // Set document direction based on current language
+    if (i18n.language === 'ar') {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'ar';
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.documentElement.lang = i18n.language;
+    }
+  }, [i18n.language]);
+
+  const changeLanguage = async (lng: string) => {
+    try {
+      console.log('Changing language to:', lng);
+      await i18n.changeLanguage(lng);
+      localStorage.setItem('language', lng);
+      console.log('Language changed successfully to:', lng);
+      
+      // Force a re-render by updating the document direction for RTL languages
+      if (lng === 'ar') {
+        document.documentElement.dir = 'rtl';
+        document.documentElement.lang = 'ar';
+      } else {
+        document.documentElement.dir = 'ltr';
+        document.documentElement.lang = lng;
+      }
+      
+      // Show success toast
+      toast({
+        title: 'Language Changed',
+        description: `Language changed to ${lng === 'en' ? 'English' : lng === 'fr' ? 'Français' : 'العربية'}`,
+      });
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
   };
 
   const handleLogout = async () => {
@@ -444,21 +484,27 @@ export function Header() {
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={() => changeLanguage('en')}
-                className="cursor-pointer transition-colors duration-150 hover:bg-accent"
+                className={`cursor-pointer transition-colors duration-150 hover:bg-accent ${
+                  i18n.language === 'en' ? 'bg-accent text-accent-foreground' : ''
+                }`}
               >
-                🇺🇸 English
+                🇺🇸 English {i18n.language === 'en' && '✓'}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => changeLanguage('fr')}
-                className="cursor-pointer transition-colors duration-150 hover:bg-accent"
+                className={`cursor-pointer transition-colors duration-150 hover:bg-accent ${
+                  i18n.language === 'fr' ? 'bg-accent text-accent-foreground' : ''
+                }`}
               >
-                🇫🇷 Français
+                🇫🇷 Français {i18n.language === 'fr' && '✓'}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => changeLanguage('ar')}
-                className="cursor-pointer transition-colors duration-150 hover:bg-accent"
+                className={`cursor-pointer transition-colors duration-150 hover:bg-accent ${
+                  i18n.language === 'ar' ? 'bg-accent text-accent-foreground' : ''
+                }`}
               >
-                🇸🇦 العربية
+                🇸🇦 العربية {i18n.language === 'ar' && '✓'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
