@@ -1,21 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    return NextResponse.json({
-      status: 'success',
-      message: 'Simple API is working',
+    const testData = {
+      message: 'API is working!',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
+      environment: process.env.NODE_ENV || 'development',
+      status: 'success',
+      features: {
+        authentication: 'simplified',
+        database: 'bypassed',
+        api: 'operational'
+      }
+    };
+
+    return NextResponse.json(testData, {
+      status: 200,
       headers: {
-        userAgent: request.headers.get('user-agent'),
-        host: request.headers.get('host'),
+        'Cache-Control': 'no-cache',
+        'X-Test-API': 'Static'
       }
     });
   } catch (error) {
     return NextResponse.json(
-      { 
-        status: 'error',
+      {
+        message: 'API Error',
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
       },
