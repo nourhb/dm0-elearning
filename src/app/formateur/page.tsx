@@ -109,20 +109,24 @@ function FormateurDashboardContent() {
 
   useEffect(() => {
     if (user?.uid) {
-      async function fetchCourses() {
+      async function fetchDashboardData() {
         try {
           setLoading(true);
-          const res = await fetch('/api/formateur/courses', { cache: 'no-store' });
-          if (!res.ok) throw new Error('Failed to load courses');
+          // ✅ OPTIMIZED: Single consolidated API call
+          const res = await fetch('/api/dashboard/overview', { 
+            cache: 'force-cache',
+            next: { revalidate: 60 } // Cache for 1 minute
+          });
+          if (!res.ok) throw new Error('Failed to load dashboard data');
           const data = await res.json();
           setCourses(data.courses || []);
         } catch (error) {
-          console.error('Failed to fetch courses:', error);
+          console.error('Failed to fetch dashboard data:', error);
         } finally {
           setLoading(false);
         }
       }
-      fetchCourses();
+      fetchDashboardData();
     }
   }, [user]);
   

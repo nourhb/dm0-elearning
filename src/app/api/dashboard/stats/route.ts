@@ -130,7 +130,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid user role' }, { status: 400 });
     }
 
-    return NextResponse.json({ stats });
+    // Add cache headers for better performance
+    const response = NextResponse.json({ stats });
+
+    // Cache based on user role - admin data changes more frequently
+    const cacheTime = userRole === 'admin' ? 30 : 60; // 30s for admin, 60s for others
+    response.headers.set('Cache-Control', `public, s-maxage=${cacheTime}, stale-while-revalidate=300`);
+
+    return response;
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

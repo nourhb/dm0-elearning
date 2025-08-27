@@ -97,7 +97,13 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid user role' }, { status: 400 });
     }
 
-    return NextResponse.json({ courses });
+    // Add cache headers for better performance
+    const response = NextResponse.json({ courses });
+
+    // Cache courses for 5 minutes since they don't change frequently
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+
+    return response;
   } catch (error) {
     console.error('Error fetching courses:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

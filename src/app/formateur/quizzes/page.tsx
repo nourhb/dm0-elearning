@@ -48,27 +48,36 @@ function QuizzesPageContent() {
         setQuizzes(quizzesData.quizzes);
         setCourses(coursesData.courses);
 
-        // Fetch stats for each quiz using API routes
-        const statsPromises = quizzesData.quizzes.map(async (quiz: any) => {
-          const statsResponse = await fetch(`/api/formateur/quizzes/${quiz.id}/stats`);
-          if (statsResponse.ok) {
-            const stats = await statsResponse.json();
-            return { quizId: quiz.id, stats };
-          }
-          return { quizId: quiz.id, stats: null };
+        // ✅ OPTIMIZED: Single batch API call instead of N+1 queries
+        const quizIds = quizzesData.quizzes.map((quiz: any) => quiz.id);
+        const batchStatsResponse = await fetch('/api/formateur/quizzes/stats-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quizIds }),
+          cache: 'force-cache',
+          next: { revalidate: 120 } // Cache for 2 minutes
         });
 
-        const statsResults = await Promise.all(statsPromises);
-        const statsMap = statsResults.reduce((acc, { quizId, stats }) => {
-          acc[quizId] = stats || {
-            totalAttempts: 0,
-            averageScore: 0,
-            passRate: 0,
-            averageTimeSpent: 0,
-            questionStats: [],
-          };
-          return acc;
-        }, {} as Record<string, QuizStats>);
+        let statsMap = {};
+        if (batchStatsResponse.ok) {
+          const batchStatsData = await batchStatsResponse.json();
+          statsMap = batchStatsData.quizStats.reduce((acc: any, stat: any) => {
+            acc[stat.quizId] = stat;
+            return acc;
+          }, {});
+        } else {
+          // Fallback: create empty stats for each quiz
+          statsMap = quizzesData.quizzes.reduce((acc: any, quiz: any) => {
+            acc[quiz.id] = {
+              totalAttempts: 0,
+              averageScore: 0,
+              passRate: 0,
+              averageTimeSpent: 0,
+              questionStats: [],
+            };
+            return acc;
+          }, {});
+        }
 
         setQuizStats(statsMap);
       } catch (error) {

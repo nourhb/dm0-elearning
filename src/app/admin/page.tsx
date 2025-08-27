@@ -137,39 +137,24 @@ function AdminDashboardContent() {
         try {
           setLoading(true);
           
-          // Fetch real dashboard statistics from database
-          const [statsRes, coursesRes, enrollmentRequestsRes] = await Promise.all([
-            fetch('/api/dashboard/stats', { cache: 'no-store' }),
-            fetch('/api/dashboard/courses', { cache: 'no-store' }),
-            fetch('/api/admin/enrollment-requests', { cache: 'no-store' })
-          ]);
+          // ✅ OPTIMIZED: Single consolidated API call instead of 4 separate calls
+          const dashboardRes = await fetch('/api/dashboard/overview', { 
+            cache: 'force-cache',
+            next: { revalidate: 30 } // Cache for 30 seconds
+          });
 
-          if (statsRes.ok) {
-            const statsData = await statsRes.json();
-            setStats(statsData.stats || {});
-            setRecentActivity(statsData.stats?.recentActivity || []);
-          }
-
-          if (coursesRes.ok) {
-            const coursesData = await coursesRes.json();
-            setCourses(coursesData.courses || []);
-          }
-
-          if (enrollmentRequestsRes.ok) {
-            const enrollmentData = await enrollmentRequestsRes.json();
-            setEnrollmentRequests(enrollmentData.requests || []);
-          }
-
-          // Fetch users data
-          try {
-            const usersRes = await fetch('/api/dashboard/users', { cache: 'no-store' });
-            if (usersRes.ok) {
-              const usersData = await usersRes.json();
-              setUsers(usersData.users || []);
-              setRoleDistribution(usersData.roleDistribution || {});
-            }
-          } catch (error) {
-            console.error('Failed to fetch users:', error);
+          if (dashboardRes.ok) {
+            const dashboardData = await dashboardRes.json();
+            
+            // Set all dashboard data from single response
+            setStats(dashboardData.stats || {});
+            setCourses(dashboardData.courses || []);
+            setUsers(dashboardData.users || []);
+            setEnrollmentRequests(dashboardData.enrollmentRequests || []);
+            setRoleDistribution(dashboardData.roleDistribution || {});
+            setRecentActivity(dashboardData.stats?.recentActivity || []);
+          } else {
+            throw new Error('Failed to fetch dashboard data');
           }
 
         } catch (error) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useActionState, useEffect, startTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,11 +41,15 @@ type FormData = {
 
 function CreateQuizForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
   const { toast } = useToast();
   const { user, services } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Get courseId from URL if coming from course edit page
+  const courseIdFromUrl = searchParams.get('courseId');
 
   const [state, formAction] = useActionState(createQuizAction, null);
 
@@ -80,7 +84,7 @@ function CreateQuizForm() {
     defaultValues: {
       title: '',
       description: '',
-      courseId: '',
+      courseId: courseIdFromUrl || '',
       timeLimit: 30,
       passingScore: 70,
       maxAttempts: user?.role === 'admin' ? 10 : user?.role === 'formateur' ? 5 : 3,

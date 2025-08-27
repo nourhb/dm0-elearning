@@ -15,12 +15,12 @@ import { Header } from '@/components/dashboard/header';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Sparkles, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, Sparkles, PlusCircle, Trash2, FileText, Clock, Target, Users } from 'lucide-react';
 import Link from 'next/link';
 import { generateCourseModules } from '@/ai/flows/generate-course-modules';
 import { updateCourseAction, deleteCourseAction } from './actions';
 import { getCourseById } from '@/lib/services/courses';
-import type { Course } from '@/lib/types';
+import type { Course, Quiz } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -36,6 +36,7 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CloudinaryImageUpload } from '@/components/dashboard/cloudinary-image-upload';
+import { Badge } from '@/components/ui/badge';
 
 type FormData = {
   title: string;
@@ -71,6 +72,8 @@ function EditCourseForm() {
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [courseQuizzes, setCourseQuizzes] = useState<Quiz[]>([]);
+  const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 
   const [state, formAction, isSubmitting] = useActionState(updateCourseAction, null);
 
@@ -138,6 +141,22 @@ function EditCourseForm() {
         .finally(() => setLoading(false));
     }
   }, [courseId, services?.db, reset, router, t, toast]);
+
+  // Fetch quizzes for this course
+  useEffect(() => {
+    if (courseId && services?.db) {
+      setLoadingQuizzes(true);
+      fetch(`/api/formateur/quizzes?courseId=${courseId}`)
+        .then(res => res.json())
+        .then(data => {
+          setCourseQuizzes(data.quizzes || []);
+        })
+        .catch(err => {
+          console.error('Failed to fetch quizzes:', err);
+        })
+        .finally(() => setLoadingQuizzes(false));
+    }
+  }, [courseId, services?.db]);
 
 
   useEffect(() => {
@@ -543,14 +562,14 @@ function EditCourseForm() {
                     </CardContent>
                 </Card>
            </div>
-           <div className="lg:col-span-1">
+           <div className="lg:col-span-1 space-y-6">
                  <Card>
                     <CardHeader>
                         <CardTitle>{t('courseImage')}</CardTitle>
                         <CardDescription>{t('uploadAnImageForYourCourse')}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                                                <CloudinaryImageUpload
+                        <CloudinaryImageUpload
                             currentImageUrl={imageUrl}
                             onImageUrlChange={(url) => setValue('imageUrl', url, { shouldDirty: true })}
                             label={t('courseImage')}
@@ -559,6 +578,90 @@ function EditCourseForm() {
                             maxSize={5}
                         />
                         {(state?.errors?.imageUrl) && <p className="mt-2 text-sm text-destructive">{state?.errors?.imageUrl}</p>}
+                    </CardContent>
+                 </Card>
+
+                 {/* Course Quizzes Management */}
+                 <Card>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle>Final Tests</CardTitle>
+                                <CardDescription>Manage quizzes as final tests</CardDescription>
+                            </div>
+                            <Link href={`/formateur/quizzes/new?courseId=${courseId}`}>
+                                <Button size="sm" variant="outline">
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Quiz
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {loadingQuizzes ? (
+                            <div className="space-y-3">
+                                {[1, 2, 3].map(i => (
+                                    <Skeleton key={i} className="h-16 w-full" />
+                                ))}
+                            </div>
+                        ) : courseQuizzes.length === 0 ? (
+                            <div className="text-center py-6">
+                                <FileText className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                                <p className="text-sm text-muted-foreground mb-4">
+                                    No quizzes added yet
+                                </p>
+                                <Link href={`/formateur/quizzes/new?courseId=${courseId}`}>
+                                    <Button size="sm" variant="outline">
+                                        <PlusCircle className="mr-2 h-4 w-4" />
+                                        Create First Quiz
+                                    </Button>
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {courseQuizzes.map(quiz => (
+                                    <div key={quiz.id} className="p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-medium text-sm truncate">{quiz.title}</h4>
+                                                <p className="text-xs text-muted-foreground truncate">{quiz.description}</p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>{quiz.timeLimit || 'No limit'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                        <Target className="h-3 w-3" />
+                                                        <span>{quiz.passingScore}%</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                        <Users className="h-3 w-3" />
+                                                        <span>{quiz.maxAttempts} attempts</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1 ml-2">
+                                                <Badge variant={quiz.isActive ? "default" : "secondary"} className="text-xs">
+                                                    {quiz.isActive ? "Active" : "Inactive"}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 mt-3">
+                                            <Link href={`/formateur/quizzes/${quiz.id}/edit`} className="flex-1">
+                                                <Button size="sm" variant="outline" className="w-full">
+                                                    Edit
+                                                </Button>
+                                            </Link>
+                                            <Link href={`/formateur/quizzes/${quiz.id}/stats`} className="flex-1">
+                                                <Button size="sm" variant="outline" className="w-full">
+                                                    Stats
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                  </Card>
            </div>

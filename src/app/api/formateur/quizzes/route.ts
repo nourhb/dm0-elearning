@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminServices } from '@/lib/firebase-admin';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,12 +24,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Get courseId from query parameters for filtering
+    const { searchParams } = new URL(request.url);
+    const courseId = searchParams.get('courseId');
+
     let quizzes = [];
 
     if (userRole === 'admin') {
-      // Admin sees all quizzes
-      const quizzesSnapshot = await db.collection('quizzes').orderBy('createdAt', 'desc').get();
-      quizzes = quizzesSnapshot.docs.map(doc => {
+      // Admin sees all quizzes, optionally filtered by courseId
+      let query: any = db.collection('quizzes');
+      if (courseId) {
+        query = query.where('courseId', '==', courseId);
+      }
+      const quizzesSnapshot = await query.orderBy('createdAt', 'desc').get();
+      quizzes = quizzesSnapshot.docs.map((doc: any) => {
         const data = doc.data();
         const createdAt = data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date();
         const updatedAt = data.updatedAt?.toDate?.() || new Date(data.updatedAt) || new Date();
@@ -41,13 +50,14 @@ export async function GET(request: NextRequest) {
         };
       });
     } else {
-      // Formateur sees only their own quizzes
-      const quizzesSnapshot = await db.collection('quizzes')
-        .where('instructorId', '==', userId)
-        .orderBy('createdAt', 'desc')
-        .get();
+      // Formateur sees only their own quizzes, optionally filtered by courseId
+      let query: any = db.collection('quizzes').where('createdBy', '==', userId);
+      if (courseId) {
+        query = query.where('courseId', '==', courseId);
+      }
+      const quizzesSnapshot = await query.orderBy('createdAt', 'desc').get();
       
-      quizzes = quizzesSnapshot.docs.map(doc => {
+      quizzes = quizzesSnapshot.docs.map((doc: any) => {
         const data = doc.data();
         const createdAt = data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date();
         const updatedAt = data.updatedAt?.toDate?.() || new Date(data.updatedAt) || new Date();

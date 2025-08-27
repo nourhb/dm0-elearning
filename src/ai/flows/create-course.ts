@@ -21,10 +21,11 @@ export async function createCourse(input: CreateCourseInput): Promise<void> {
         level: input.level,
         imageUrl: input.imageUrl || DEFAULT_PLACEHOLDER_IMAGE,
         aiHint: null,
-        status: 'Draft',
+        status: 'pending_approval', // ✅ Fixed: All new courses require admin approval
         studentCount: 0,
         modules: input.modules,
         createdAt: new Date(),
+        updatedAt: new Date(),
     });
 }
 
