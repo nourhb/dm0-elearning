@@ -31,7 +31,7 @@ export async function createEnrollmentRequest(
     courseTitle,
     instructorId,
     status: 'pending',
-    requestMessage: requestMessage || null, // Convert undefined to null for Firestore
+    requestMessage: requestMessage || undefined, // Keep as undefined for consistency
     createdAt: new Date(),
     updatedAt: new Date(),
   };

@@ -52,6 +52,8 @@ export async function createCourseAction(prevState: any, formData: FormData) {
             title: errorMessages.title?.[0],
             description: errorMessages.description?.[0],
             imageUrl: errorMessages.imageUrl?.[0],
+            category: errorMessages.category?.[0],
+            level: errorMessages.level?.[0],
             modules: errorMessages.modules?.[0],
         }
     };

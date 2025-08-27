@@ -88,7 +88,7 @@ export function UserRolesChart({ users = [] }: UserRolesChartProps) {
             ))}
         </Pie>
          <ChartLegend
-          content={<ChartLegendContent nameKey="name" />}
+          content={({ payload }) => <ChartLegendContent nameKey="name" payload={payload} />}
           className="-translate-y-[2rem] flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
         />
       </PieChart>

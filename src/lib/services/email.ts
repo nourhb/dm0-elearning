@@ -164,7 +164,7 @@ export async function sendTemplatedEmail(
     to,
     subject: emailTemplate.subject,
     html: emailTemplate.html(data),
-    text: emailTemplate.text?.(data),
+    text: (emailTemplate as EmailTemplate).text ? (emailTemplate as EmailTemplate).text!(data) : undefined,
   });
 }
 

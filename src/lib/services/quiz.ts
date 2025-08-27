@@ -91,7 +91,10 @@ export async function getQuizzesForCourse(db: Firestore, courseId: string): Prom
         const quizzesCollection = collection(db, 'quizzes');
         const q = query(quizzesCollection, where('courseId', '==', courseId), where('isActive', '==', true), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data());
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Quiz));
     } catch (error) {
         console.error('Error fetching quizzes for course:', error);
         return [];
@@ -105,7 +108,10 @@ export async function getAllQuizzes(db: Firestore): Promise<Quiz[]> {
     try {
         const quizzesCollection = collection(db, 'quizzes');
         const querySnapshot = await getDocs(query(quizzesCollection, orderBy('createdAt', 'desc')));
-        return querySnapshot.docs.map(doc => doc.data());
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Quiz));
     } catch (error) {
         console.error('Error fetching all quizzes:', error);
         return [];
@@ -118,7 +124,7 @@ export async function getAllQuizzes(db: Firestore): Promise<Quiz[]> {
 export async function getQuizById(db: Firestore, quizId: string): Promise<Quiz | null> {
     try {
         const quizDoc = await getDoc(doc(db, 'quizzes', quizId).withConverter(quizConverter));
-        if (quizDoc.exists) {
+        if (quizDoc.exists()) {
             return quizDoc.data();
         }
         return null;
@@ -143,7 +149,10 @@ export async function getQuizAttemptsForUser(db: Firestore, userId: string, quiz
         }
         
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data());
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as QuizAttempt));
     } catch (error) {
         console.error('Error fetching quiz attempts:', error);
         return [];
@@ -198,6 +207,9 @@ export async function submitQuizAttempt(
         }
         
         const attempt = attemptDoc.data();
+        if (!attempt) {
+            throw new Error('Quiz attempt data not found');
+        }
         const quiz = await getQuizById(db, attempt.quizId);
         
         if (!quiz) {
@@ -224,7 +236,7 @@ export async function submitQuizAttempt(
                 isCorrect,
                 timeSpent: answer.timeSpent,
             };
-        }).filter(Boolean);
+        }).filter((answer): answer is NonNullable<typeof answer> => answer !== null);
         
         const percentage = quiz.questions.length > 0 ? (correctAnswers / quiz.questions.length) * 100 : 0;
         const passed = percentage >= quiz.passingScore;
@@ -278,14 +290,14 @@ export async function getQuizStats(db: Firestore, quizId: string): Promise<QuizS
         // Calculate question statistics
         const quiz = await getQuizById(db, quizId);
         const questionStats = quiz?.questions.map(question => {
-            const questionAnswers = attemptsData.flatMap(a => 
-                a.answers.filter(ans => ans.questionId === question.id)
+            const questionAnswers = attemptsData.flatMap((a: any) => 
+                a.answers.filter((ans: any) => ans.questionId === question.id)
             );
             
-            const correctAnswers = questionAnswers.filter(a => a.isCorrect).length;
+            const correctAnswers = questionAnswers.filter((a: any) => a.isCorrect).length;
             const totalAnswers = questionAnswers.length;
             const avgTimeSpent = questionAnswers.length > 0 
-                ? questionAnswers.reduce((sum, a) => sum + a.timeSpent, 0) / questionAnswers.length 
+                ? questionAnswers.reduce((sum: number, a: any) => sum + a.timeSpent, 0) / questionAnswers.length 
                 : 0;
             
             return {

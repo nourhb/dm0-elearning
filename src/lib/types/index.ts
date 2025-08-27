@@ -1,4 +1,6 @@
 
+import type { LucideIcon } from 'lucide-react';
+
 /**
  * @fileoverview
  * This file contains all the shared type definitions for the application.
@@ -27,8 +29,12 @@ export interface Lesson {
     id: string;
     title: string;
     content: string;
+    description?: string; // Optional description
     duration: number; // in minutes
     completed?: boolean;
+    url?: string; // Video URL
+    videoSource?: 'youtube' | 'vimeo' | 'gdrive' | 'self-hosted'; // Video source type
+    contentType?: 'video' | 'text' | 'quiz' | 'assignment' | 'document'; // Type of lesson content
 }
 
 /**
@@ -81,8 +87,23 @@ export interface Achievement {
     id: string;
     name: string;
     description: string;
-    icon: string;
-    criteria: string;
+    icon: LucideIcon;
+    criteria?: string;
+}
+
+/**
+ * Represents a notification for a user.
+ */
+export interface Notification {
+    id?: string;
+    userId: string;
+    title: string;
+    message: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    link?: string;
+    read: boolean;
+    createdAt: Date;
+    data?: any;
 }
 
 /**
@@ -194,24 +215,7 @@ export interface Reply {
     isSolution?: boolean;
 }
 
-/**
- * Represents community statistics and metrics.
- */
-export interface CommunityStats {
-    totalMembers: number;
-    activeMembers: number;
-    totalDiscussions: number;
-    totalReplies: number;
-    totalAchievements: number;
-    growthRate: number;
-    topContributors: {
-        uid: string;
-        displayName: string;
-        contributions: number;
-        avatar?: string;
-        reputation: number;
-    }[];
-}
+
 
 /**
  * Represents a user's community profile with contribution metrics.

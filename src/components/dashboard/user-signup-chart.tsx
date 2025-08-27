@@ -43,9 +43,9 @@ export function UserSignupChart({ users = [] }: UserSignupChartProps) {
                 signupDate = user.createdAt;
             } else if (typeof user.createdAt === 'string') {
                 signupDate = new Date(user.createdAt);
-            } else if (user.createdAt && typeof user.createdAt === 'object' && user.createdAt.toDate) {
+            } else if (user.createdAt && typeof user.createdAt === 'object' && (user.createdAt as any).toDate) {
                 // Firestore timestamp
-                signupDate = user.createdAt.toDate();
+                signupDate = (user.createdAt as any).toDate();
             } else {
                 // Fallback to current date if invalid
                 signupDate = new Date();

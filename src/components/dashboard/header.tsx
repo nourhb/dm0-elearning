@@ -332,7 +332,7 @@ function NotificationBell() {
                                         "flex items-start gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-accent/50 cursor-pointer",
                                         !notification.read && "bg-accent/20"
                                     )}
-                                    onClick={() => !notification.read && handleMarkAsRead(notification.id)}
+                                    onClick={() => !notification.read && notification.id && handleMarkAsRead(notification.id)}
                                 >
                                     <div className={cn(
                                         "w-2 h-2 rounded-full mt-2 flex-shrink-0",
@@ -353,11 +353,11 @@ function NotificationBell() {
                                                         date = notification.createdAt;
                                                     } else if (typeof notification.createdAt === 'string') {
                                                         date = new Date(notification.createdAt);
-                                                    } else if (notification.createdAt && typeof notification.createdAt === 'object' && notification.createdAt.toDate) {
-                                                        date = notification.createdAt.toDate();
-                                                    } else if (notification.createdAt && notification.createdAt.seconds) {
+                                                    } else if (notification.createdAt && typeof notification.createdAt === 'object' && (notification.createdAt as any).toDate) {
+                                                        date = (notification.createdAt as any).toDate();
+                                                    } else if (notification.createdAt && (notification.createdAt as any).seconds) {
                                                         // Handle Firestore Timestamp
-                                                        date = new Date(notification.createdAt.seconds * 1000);
+                                                        date = new Date((notification.createdAt as any).seconds * 1000);
                                                     } else {
                                                         date = new Date();
                                                     }

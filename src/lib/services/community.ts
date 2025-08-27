@@ -125,7 +125,7 @@ export async function createCommunityPost(db: Firestore, post: Omit<CommunityPos
     // Update user's post count
     try {
       await updateUserCommunityProfile(db, post.authorId, {
-        totalPosts: increment(1)
+        totalPosts: increment(1) as any
       });
     } catch (profileError) {
       console.warn('Could not update user profile, but post was created:', profileError);
@@ -328,7 +328,7 @@ export async function createPostComment(db: Firestore, comment: Omit<PostComment
     try {
       const postRef = doc(db, 'communityPosts', comment.postId);
       await updateDoc(postRef, {
-        comments: increment(1),
+        comments: increment(1) as any,
         lastActivityAt: serverTimestamp(),
       });
     } catch (postError) {
@@ -338,7 +338,7 @@ export async function createPostComment(db: Firestore, comment: Omit<PostComment
     // Update user's comment count
     try {
       await updateUserCommunityProfile(db, comment.authorId, {
-        totalComments: increment(1)
+        totalComments: increment(1) as any
       });
     } catch (profileError) {
       console.warn('Could not update user profile, but comment was created:', profileError);
@@ -446,7 +446,7 @@ export async function likePost(db: Firestore, postId: string, userId: string): P
       // Unlike
       await deleteDoc(interactionRef);
       await updateDoc(doc(db, 'communityPosts', postId), {
-        likes: increment(-1)
+        likes: increment(-1) as any
       });
     } else {
       // Like
@@ -457,7 +457,7 @@ export async function likePost(db: Firestore, postId: string, userId: string): P
         createdAt: serverTimestamp(),
       });
       await updateDoc(doc(db, 'communityPosts', postId), {
-        likes: increment(1)
+        likes: increment(1) as any
       });
     }
   } catch (error) {
@@ -480,7 +480,7 @@ export async function sharePost(db: Firestore, postId: string, userId: string, s
     
     // Increment the share count on the post
     await updateDoc(doc(db, 'communityPosts', postId), {
-      shares: increment(1)
+              shares: increment(1) as any
     });
   } catch (error) {
     console.error('Error recording post share:', error);
@@ -501,7 +501,7 @@ export async function viewPost(db: Firestore, postId: string, userId: string): P
         createdAt: serverTimestamp(),
       });
       await updateDoc(doc(db, 'communityPosts', postId), {
-        views: increment(1)
+        views: increment(1) as any
       });
     }
   } catch (error) {
@@ -799,7 +799,14 @@ export async function getCommunityStats(db: Firestore): Promise<CommunityStats> 
     const engagementRate = totalMembers > 0 ? Math.round((totalLikes / totalMembers) * 100) : 0;
 
     // Get top contributors
-    const topContributors = await getTopContributors(db, 5);
+    const topContributorsProfiles = await getTopContributors(db, 5);
+    const topContributors = topContributorsProfiles.map(profile => ({
+      uid: profile.uid,
+      displayName: profile.displayName,
+      contributions: profile.totalPosts + profile.totalComments,
+      avatar: profile.avatar,
+      reputation: profile.reputation
+    }));
 
     return {
       totalMembers,

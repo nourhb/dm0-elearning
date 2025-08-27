@@ -163,7 +163,7 @@ async function getRecentActivity(db: any) {
     
     if (courseDoc.exists && userDoc.exists) {
       activities.push({
-        type: 'enrollment',
+        type: 'info',
         title: `${(userDoc as any).data().displayName || (userDoc as any).data().email} enrolled in ${(courseDoc as any).data().title}`,
         timestamp: enrollment.startedAt?.toDate?.() || enrollment.startedAt,
         data: { courseId: enrollment.courseId, userId: enrollment.userId }
@@ -210,7 +210,7 @@ async function getFormateurRecentActivity(db: any, instructorId: string) {
       
       if (courseDoc.exists && userDoc.exists) {
         activities.push({
-          type: 'student_enrollment',
+          type: 'info',
           title: `${(userDoc as any).data().displayName || (userDoc as any).data().email} enrolled in ${(courseDoc as any).data().title}`,
           timestamp: enrollment.startedAt?.toDate?.() || enrollment.startedAt,
           data: { courseId: enrollment.courseId, userId: enrollment.userId }

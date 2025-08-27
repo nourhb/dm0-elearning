@@ -50,8 +50,8 @@ type FormData = {
         id: string;
         title: string;
         description?: string;
-        contentType: 'video' | 'document' | 'text';
-        videoSource?: 'youtube' | 'vimeo' | 'gdrive' | 'self-hosted' | null;
+        contentType?: 'video' | 'document' | 'text' | 'quiz' | 'assignment';
+        videoSource?: 'youtube' | 'vimeo' | 'gdrive' | 'self-hosted' | string;
         url?: string;
         content?: string;
     }[];
@@ -319,7 +319,7 @@ function EditCourseForm() {
                 title: '', 
                 description: '', 
                 contentType: 'text',
-                videoSource: null,
+                videoSource: undefined,
                 url: '',
                 content: ''
             })}
@@ -453,7 +453,6 @@ function EditCourseForm() {
                            render={({ field }) => (
                              <select
                                id="category"
-                               name="category"
                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                {...field}
                              >
@@ -477,7 +476,6 @@ function EditCourseForm() {
                            render={({ field }) => (
                              <select
                                id="level"
-                               name="level"
                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                {...field}
                              >

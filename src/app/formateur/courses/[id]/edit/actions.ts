@@ -10,7 +10,7 @@ const lessonSchema = z.object({
   id: z.string(),
   title: z.string().min(3, 'Lesson title must be at least 3 characters.'),
   description: z.string().optional(),
-  contentType: z.enum(['video', 'document', 'text']),
+  contentType: z.enum(['video', 'document', 'text', 'quiz', 'assignment']),
   videoSource: z.enum(['youtube', 'vimeo', 'gdrive', 'self-hosted']).optional().nullable(),
   url: z.string().optional().nullable(),
   content: z.string().optional().nullable(),
@@ -64,6 +64,8 @@ export async function updateCourseAction(prevState: any, formData: FormData) {
             title: errorMessages.title?.[0],
             description: errorMessages.description?.[0],
             imageUrl: errorMessages.imageUrl?.[0],
+            category: errorMessages.category?.[0],
+            level: errorMessages.level?.[0],
             modules: errorMessages.modules?.[0] || 'Error in module data.',
         }
     };

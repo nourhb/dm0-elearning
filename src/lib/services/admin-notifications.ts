@@ -301,7 +301,7 @@ export async function notifyFormateurCourseApproved(course: any, adminName: stri
       userId: course.instructorId,
       title: 'Course Approved!',
       message: `Your course "${course.title}" has been approved by ${adminName} and is now live for students.`,
-      type: 'course_approval',
+      type: 'success',
       data: { courseId: course.id, status: 'approved' }
     });
   }
@@ -318,7 +318,7 @@ export async function notifyFormateurCourseRejected(course: any, adminName: stri
       userId: course.instructorId,
       title: 'Course Review Required',
       message: `Your course "${course.title}" needs revisions. ${reason ? `Reason: ${reason}` : 'Please review and resubmit.'}`,
-      type: 'course_rejection',
+      type: 'warning',
       data: { courseId: course.id, status: 'rejected', reason }
     });
   }

@@ -272,7 +272,7 @@ export async function GET(request: NextRequest) {
         }
       })
       .map(r => ({
-        type: 'enrollment_request',
+        type: 'info',
         user: (r as any).studentName || 'Unknown Student', // Added default
         action: `requested enrollment in "${(r as any).courseTitle || 'Unknown Course'}"`, // Added default
         time: (r as any).createdAt,

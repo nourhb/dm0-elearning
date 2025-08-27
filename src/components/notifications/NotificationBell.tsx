@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/use-auth';
 import { getNotificationsForUser, markNotificationAsRead, deleteNotification, getUnreadNotificationCount } from '@/lib/services/notifications';
 import type { Notification } from '@/lib/services/notifications';
 

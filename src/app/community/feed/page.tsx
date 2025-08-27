@@ -31,6 +31,7 @@ import {
   Camera,
   TrendingUp,
   Clock,
+  Sparkles,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -155,7 +156,7 @@ function CommunityFeedContent() {
           email: user.email || '',
           displayName: user.displayName || 'Anonymous',
           role: (user.role as 'admin' | 'formateur' | 'student') || 'student',
-          avatar: user.photoURL || null,
+          avatar: user.photoURL || undefined,
           bio: '',
           status: 'active',
         });
