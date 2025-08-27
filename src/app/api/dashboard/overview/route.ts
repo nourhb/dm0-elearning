@@ -1,24 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { optimizedAPIs } from '@/lib/performance/optimized-api';
-import { cookies } from 'next/headers';
-import { getAdminServices } from '@/lib/firebase-admin';
+import { tokenManager } from '@/lib/auth/token-manager';
 
 export async function GET(request: NextRequest) {
   try {
-    const { auth, db } = getAdminServices();
+    // Use the new token manager for robust authentication
+    const authResult = await tokenManager.authenticate();
     
-    // Get the auth token from cookies
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get('AuthToken')?.value;
-
-    if (!authToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!authResult.success) {
+      return NextResponse.json({ 
+        error: authResult.error || 'Unauthorized',
+        needsAuth: true
+      }, { status: 401 });
     }
 
-    // Verify the token and get user claims
-    const decodedToken = await auth.verifyIdToken(authToken);
-    const userRole = decodedToken.role || 'student';
-    const userId = decodedToken.uid;
+    const userRole = authResult.user!.role;
+    const userId = authResult.user!.uid;
 
     // Use optimized API for dashboard data
     return optimizedAPIs.dashboard.execute(request, async (firebaseApp) => {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useAuthRefresh } from '@/hooks/use-auth-refresh';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,6 +71,7 @@ import type { UserProfile, Course } from '@/lib/types';
 export function ModernAdminDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { authFetch, isRefreshing } = useAuthRefresh();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -85,11 +87,7 @@ export function ModernAdminDashboard() {
       if (user?.uid) {
         try {
           setLoading(true);
-          const res = await fetch('/api/dashboard/overview', { 
-            cache: 'force-cache',
-            next: { revalidate: 60 }
-          });
-          if (!res.ok) throw new Error('Failed to load dashboard data');
+          const res = await authFetch('/api/dashboard/overview');
           const data = await res.json();
           
           setUsers(data.users || []);
@@ -108,7 +106,7 @@ export function ModernAdminDashboard() {
       }
     }
     fetchData();
-  }, [user, toast]);
+  }, [user, authFetch, toast]);
 
   // Calculate real-time statistics
   const realStats = {
@@ -206,34 +204,34 @@ export function ModernAdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                setLoading(true);
-                fetch('/api/dashboard/overview', { cache: 'no-store' })
-                  .then(res => res.json())
-                  .then(data => {
-                    setUsers(data.users || []);
-                    setCourses(data.courses || []);
-                    setEnrollmentRequests(data.enrollmentRequests || []);
-                    toast({
-                      title: 'Success',
-                      description: 'Dashboard data refreshed',
-                    });
-                  })
-                  .catch(error => {
-                    console.error('Failed to refresh:', error);
-                    toast({
-                      variant: 'destructive',
-                      title: 'Error',
-                      description: 'Failed to refresh dashboard data',
-                    });
-                  })
-                  .finally(() => setLoading(false));
-              }}
-              disabled={loading}
-            >
+                         <Button 
+               variant="outline" 
+               size="sm"
+               onClick={async () => {
+                 try {
+                   setLoading(true);
+                   const res = await authFetch('/api/dashboard/overview');
+                   const data = await res.json();
+                   setUsers(data.users || []);
+                   setCourses(data.courses || []);
+                   setEnrollmentRequests(data.enrollmentRequests || []);
+                   toast({
+                     title: 'Success',
+                     description: 'Dashboard data refreshed',
+                   });
+                 } catch (error) {
+                   console.error('Failed to refresh:', error);
+                   toast({
+                     variant: 'destructive',
+                     title: 'Error',
+                     description: 'Failed to refresh dashboard data',
+                   });
+                 } finally {
+                   setLoading(false);
+                 }
+               }}
+               disabled={loading || isRefreshing}
+             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
