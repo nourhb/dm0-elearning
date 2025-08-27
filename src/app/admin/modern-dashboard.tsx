@@ -25,7 +25,6 @@ import {
   Trophy,
   RefreshCw,
   UserPlus,
-  DollarSign,
   UserCheck,
   Target,
   Award,
@@ -116,15 +115,8 @@ export function ModernAdminDashboard() {
     activeUsers: users.filter(u => u.status === 'active').length,
     publishedCourses: courses.filter(c => c.status === 'Published').length,
     pendingApprovals: courses.filter(c => c.status === 'Draft').length,
-    totalRevenue: calculateTotalRevenue(),
     monthlyGrowth: calculateMonthlyGrowth(),
   };
-
-  function calculateTotalRevenue() {
-    const baseRevenue = enrollmentRequests.length * 29.99;
-    const premiumRevenue = courses.filter(c => c.level === 'advanced').length * 49.99;
-    return baseRevenue + premiumRevenue;
-  }
 
   function calculateMonthlyGrowth() {
     const currentMonth = new Date().getMonth();
@@ -159,13 +151,13 @@ export function ModernAdminDashboard() {
       rarity: 'epic' as const,
     },
     {
-      id: 'revenue-master',
-      title: 'Revenue Master',
-      description: 'Generate $10,000 in revenue',
+      id: 'platform-expert',
+      title: 'Platform Expert',
+      description: 'Manage 500 total enrollments',
       category: 'milestone' as const,
-      points: 500,
-      isUnlocked: realStats.totalRevenue >= 10000,
-      unlockedAt: realStats.totalRevenue >= 10000 ? new Date() : undefined,
+      points: 300,
+      isUnlocked: realStats.totalEnrollments >= 500,
+      unlockedAt: realStats.totalEnrollments >= 500 ? new Date() : undefined,
       rarity: 'legendary' as const,
     },
   ];
@@ -265,20 +257,20 @@ export function ModernAdminDashboard() {
           />
           
           <AnimatedProgressCard
-            title="Total Revenue"
-            value={realStats.totalRevenue}
-            maxValue={50000}
-            icon={DollarSign}
+            title="Total Enrollments"
+            value={realStats.totalEnrollments}
+            maxValue={1000}
+            icon={UserCheck}
             color="purple"
-            trend={{ value: 25, isPositive: true }}
-            subtitle="Platform revenue"
+            trend={{ value: 12, isPositive: true }}
+            subtitle="Active enrollments"
           />
           
           <AnimatedProgressCard
             title="Active Users"
             value={realStats.activeUsers}
             maxValue={realStats.totalUsers || 1}
-            icon={UserCheck}
+            icon={Activity}
             color="orange"
             trend={{ value: 8, isPositive: true }}
             subtitle="Currently active"
