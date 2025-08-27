@@ -5,16 +5,49 @@ import { notifyAdminsNewCourse } from '@/lib/services/admin-notifications';
 
 export async function GET(request: NextRequest) {
   try {
-    const { db } = getAdminServices();
+    const { auth, db } = getAdminServices();
     
-    // Get all courses from the database
-    const coursesSnapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
-    
-    const courses = coursesSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-    }));
+    // Get the auth token from cookies
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('AuthToken')?.value;
+
+    if (!authToken) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Verify the token and get user claims
+    const decodedToken = await auth.verifyIdToken(authToken);
+    const userRole = decodedToken.role || 'student';
+    const userId = decodedToken.uid;
+
+    // Only allow formateur and admin to access this endpoint
+    if (userRole !== 'formateur' && userRole !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    let courses = [];
+
+    if (userRole === 'admin') {
+      // Admin sees all courses
+      const coursesSnapshot = await db.collection('courses').orderBy('createdAt', 'desc').get();
+      courses = coursesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+      }));
+    } else {
+      // Formateur sees only their own courses
+      const coursesSnapshot = await db.collection('courses')
+        .where('instructorId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .get();
+      
+      courses = coursesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+      }));
+    }
 
     return NextResponse.json({ courses });
   } catch (error) {

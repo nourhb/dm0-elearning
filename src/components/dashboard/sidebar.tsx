@@ -102,21 +102,21 @@ export function AppSidebar() {
       icon: Compass,
       label: t('exploreCourses'),
       active: pathname.startsWith('/courses'),
-      show: true,
+      show: isStudent, // Only students explore courses
     },
     {
       href: '/community',
       icon: Users,
       label: t('community'),
       active: pathname.startsWith('/community'),
-      show: true,
+      show: isStudent, // Only students use community
     },
     {
       href: '/chat',
       icon: MessageSquare,
       label: t('chat'),
       active: pathname.startsWith('/chat'),
-      show: true,
+      show: isAdmin || isFormateur, // Only staff use chat
     },
     {
       href: '/settings',
