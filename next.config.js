@@ -63,13 +63,13 @@ const nextConfig = {
   
   // Experimental features for better performance
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Temporarily disabled for Render compatibility
     scrollRestoration: true,
   },
 
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
-    // Production optimizations
+    // Production optimizations - simplified for Render compatibility
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
