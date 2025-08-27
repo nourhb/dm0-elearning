@@ -1,84 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Test dashboard API called');
-    const { db } = getAdminServices();
-
-    // Simple approach - fetch basic data
-    const usersSnapshot = await db.collection('users').get();
-    const coursesSnapshot = await db.collection('courses').get();
-    const progressSnapshot = await db.collection('progress').get();
-    const enrollmentRequestsSnapshot = await db.collection('enrollmentRequests').get();
-
-    const users = usersSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        uid: doc.id,
-        ...data,
-        // Ensure proper date formatting
-        createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt || Date.now()),
-        updatedAt: data.updatedAt?.toDate?.() || new Date(data.updatedAt || Date.now()),
-      };
-    });
-
-    const courses = coursesSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        // Ensure proper date formatting
-        createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt || Date.now()),
-        updatedAt: data.updatedAt?.toDate?.() || new Date(data.updatedAt || Date.now()),
-      };
-    });
-
-    const progress = progressSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        // Ensure proper date formatting
-        startedAt: data.startedAt?.toDate?.() || new Date(data.startedAt || Date.now()),
-        completedAt: data.completedAt?.toDate?.() || new Date(data.completedAt || Date.now()),
-      };
-    });
-
-    const enrollmentRequests = enrollmentRequestsSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        // Ensure proper date formatting
-        createdAt: data.createdAt?.toDate?.() || new Date(data.createdAt || Date.now()),
-        updatedAt: data.updatedAt?.toDate?.() || new Date(data.updatedAt || Date.now()),
-        respondedAt: data.respondedAt?.toDate?.() || new Date(data.respondedAt || Date.now()),
-      };
-    });
-
-    const stats = {
-      totalUsers: users.length,
-      totalCourses: courses.length,
-      totalEnrollments: progress.length,
-      completedEnrollments: progress.filter(p => (p as any).completed).length,
-      adminUsers: users.filter(u => (u as any).role === 'admin').length,
-      instructorUsers: users.filter(u => (u as any).role === 'formateur').length,
-      studentUsers: users.filter(u => (u as any).role === 'student').length,
+    // Return mock data for testing
+    const mockData = {
+      stats: {
+        totalCourses: 15,
+        totalUsers: 42,
+        totalEnrollments: 128,
+        roleDistribution: {
+          admin: 3,
+          formateur: 8,
+          student: 31
+        }
+      },
+      courses: [
+        {
+          id: 'course-1',
+          title: 'Introduction to Web Development',
+          description: 'Learn the basics of HTML, CSS, and JavaScript',
+          status: 'Published',
+          instructorId: 'instructor-1',
+          studentCount: 25,
+          createdAt: new Date('2024-01-15')
+        },
+        {
+          id: 'course-2',
+          title: 'Advanced React Development',
+          description: 'Master React hooks, context, and advanced patterns',
+          status: 'Published',
+          instructorId: 'instructor-2',
+          studentCount: 18,
+          createdAt: new Date('2024-01-20')
+        },
+        {
+          id: 'course-3',
+          title: 'Node.js Backend Development',
+          description: 'Build scalable backend applications with Node.js',
+          status: 'Draft',
+          instructorId: 'instructor-1',
+          studentCount: 0,
+          createdAt: new Date('2024-01-25')
+        }
+      ],
+      users: [
+        {
+          uid: 'user-1',
+          displayName: 'John Doe',
+          email: 'john@example.com',
+          role: 'admin',
+          status: 'active',
+          createdAt: new Date('2024-01-01')
+        },
+        {
+          uid: 'user-2',
+          displayName: 'Jane Smith',
+          email: 'jane@example.com',
+          role: 'formateur',
+          status: 'active',
+          createdAt: new Date('2024-01-05')
+        },
+        {
+          uid: 'user-3',
+          displayName: 'Bob Johnson',
+          email: 'bob@example.com',
+          role: 'student',
+          status: 'active',
+          createdAt: new Date('2024-01-10')
+        }
+      ],
+      enrollmentRequests: [
+        {
+          id: 'enrollment-1',
+          courseId: 'course-1',
+          userId: 'user-3',
+          status: 'pending',
+          createdAt: new Date('2024-01-28')
+        },
+        {
+          id: 'enrollment-2',
+          courseId: 'course-2',
+          userId: 'user-4',
+          status: 'approved',
+          createdAt: new Date('2024-01-27')
+        }
+      ],
+      roleDistribution: {
+        admin: 3,
+        formateur: 8,
+        student: 31
+      }
     };
 
-    return NextResponse.json({ 
-      stats,
-      users: users.slice(0, 5), // First 5 users
-      courses: courses.slice(0, 5), // First 5 courses
-      enrollmentRequests: enrollmentRequests, // All enrollment requests
-      success: true 
-    });
+    return NextResponse.json(mockData);
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in test dashboard:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch data' },
+      { 
+        error: 'Failed to fetch test data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

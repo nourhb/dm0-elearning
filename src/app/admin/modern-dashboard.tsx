@@ -87,7 +87,7 @@ export function ModernAdminDashboard() {
       if (user?.uid) {
         try {
           setLoading(true);
-          const res = await authFetch('/api/dashboard/overview');
+          const res = await authFetch('/api/dashboard/overview-simple');
           const data = await res.json();
           
           setUsers(data.users || []);
@@ -207,29 +207,29 @@ export function ModernAdminDashboard() {
                          <Button 
                variant="outline" 
                size="sm"
-               onClick={async () => {
-                 try {
-                   setLoading(true);
-                   const res = await authFetch('/api/dashboard/overview');
-                   const data = await res.json();
-                   setUsers(data.users || []);
-                   setCourses(data.courses || []);
-                   setEnrollmentRequests(data.enrollmentRequests || []);
-                   toast({
-                     title: 'Success',
-                     description: 'Dashboard data refreshed',
-                   });
-                 } catch (error) {
-                   console.error('Failed to refresh:', error);
-                   toast({
-                     variant: 'destructive',
-                     title: 'Error',
-                     description: 'Failed to refresh dashboard data',
-                   });
-                 } finally {
-                   setLoading(false);
-                 }
-               }}
+                               onClick={async () => {
+                  try {
+                    setLoading(true);
+                    const res = await authFetch('/api/dashboard/overview-simple');
+                    const data = await res.json();
+                    setUsers(data.users || []);
+                    setCourses(data.courses || []);
+                    setEnrollmentRequests(data.enrollmentRequests || []);
+                    toast({
+                      title: 'Success',
+                      description: 'Dashboard data refreshed',
+                    });
+                  } catch (error) {
+                    console.error('Failed to refresh:', error);
+                    toast({
+                      variant: 'destructive',
+                      title: 'Error',
+                      description: 'Failed to refresh dashboard data',
+                    });
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
                disabled={loading || isRefreshing}
              >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
