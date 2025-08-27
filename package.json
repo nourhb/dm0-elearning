@@ -15,7 +15,7 @@
     "analyze": "ANALYZE=true npm run build",
     "export": "next build",
     "build:static": "next build",
-    "deploy:hostinger": "npm run build && echo 'Static files generated in out/ folder. Upload the contents to your Hostinger hosting.'"
+    "deploy:hostinger": "npm run build && echo 'Build completed. Use VPS deployment for full functionality.'"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

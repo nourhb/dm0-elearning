@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Static export for hosting on shared hosting
-  output: 'export',
-  trailingSlash: true,
+  // Production optimizations
+  // output: 'standalone', // Temporarily disabled for Render compatibility
+  trailingSlash: false,
   poweredByHeader: false,
   
   // Temporarily disable ESLint for production build
@@ -12,7 +12,6 @@ const nextConfig = {
   
   // Image optimization
   images: {
-    unoptimized: true, // Required for static export
     domains: [
       'firebasestorage.googleapis.com',
       'lh3.googleusercontent.com',

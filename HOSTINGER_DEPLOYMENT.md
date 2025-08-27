@@ -89,45 +89,23 @@ sudo apt install certbot python3-certbot-nginx -y
 sudo certbot --nginx -d your-subdomain.yourdomain.com
 ```
 
-## Option 2: Shared Hosting (Static Export)
+## Option 2: Shared Hosting (Limited - Not Recommended)
 
-### Prerequisites
-- Hostinger shared hosting plan
-- FTP access
-- Domain/subdomain configured
+⚠️ **Important**: This application has API routes and server-side functionality that cannot be exported statically. Shared hosting is **NOT recommended** for this application.
 
-### Step-by-Step Deployment
+### Why Shared Hosting Won't Work:
+- ❌ **API routes** require a Node.js server
+- ❌ **Server-side rendering** needs runtime environment
+- ❌ **Firebase Admin SDK** requires server environment
+- ❌ **Authentication** needs server-side processing
+- ❌ **Database operations** require server access
 
-#### 1. Build Static Files Locally
-```bash
-# Clone your repository locally
-git clone https://github.com/nourhb/dm0-elearning.git
-cd dm0-elearning
+### Alternative: Use VPS Hosting
+For this application, you **MUST** use VPS hosting (Option 1) to get full functionality.
 
-# Install dependencies
-npm install
+## Option 3: Hybrid Approach (Complex - Not Recommended)
 
-# Build static files
-npm run build
-```
-
-#### 2. Upload to Hostinger
-1. **Connect via FTP** to your Hostinger hosting
-2. **Navigate to** `public_html` folder
-3. **Upload all contents** from the `out/` folder to `public_html/`
-
-#### 3. Configure Domain
-1. **Go to Hostinger Control Panel**
-2. **Navigate to Domains** → Your Domain
-3. **Add subdomain** pointing to `public_html`
-
-#### 4. Environment Variables
-Since static export doesn't support server-side features, you'll need to:
-- Move API calls to external services
-- Use client-side Firebase configuration
-- Configure environment variables in Hostinger's control panel
-
-## Option 3: Hybrid Approach (Recommended for Shared Hosting)
+⚠️ **Note**: This approach is complex and requires significant code changes. It's easier to use VPS hosting.
 
 ### Frontend on Shared Hosting + Backend on VPS
 
@@ -159,6 +137,13 @@ Update your frontend to point to your VPS API:
 // In your frontend code
 const API_BASE_URL = 'https://your-vps-ip:3000/api';
 ```
+
+### Why This Is Complex:
+- 🔧 **Requires code changes** to separate frontend and backend
+- 🔧 **API endpoint configuration** needed throughout the app
+- 🔧 **CORS configuration** required
+- 🔧 **Authentication flow** needs to be modified
+- 🔧 **Error handling** becomes more complex
 
 ## 🔧 Environment Variables Setup
 
@@ -196,14 +181,11 @@ Add environment variables in Hostinger's control panel:
 └── .env
 ```
 
-### Shared Hosting (Static Export)
+### Shared Hosting (Not Supported)
 ```
-public_html/
-├── _next/
-├── api/
-├── locales/
-├── index.html
-└── [other static files]
+❌ This application cannot be deployed on shared hosting
+❌ API routes require Node.js server
+❌ Use VPS hosting instead
 ```
 
 ## 🔄 Automatic Deployment
