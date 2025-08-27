@@ -27,8 +27,8 @@ export async function uploadToCloudinary(
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   
   if (!cloudName || !uploadPreset) {
-    console.warn('Cloudinary not configured. Using local file URL as fallback.');
-    return createLocalFileResult(file);
+    console.warn('Cloudinary not configured. Using server-side upload as fallback.');
+    return uploadToServer(file, folder);
   }
 
   return new Promise((resolve, reject) => {
@@ -84,7 +84,11 @@ export async function uploadToCloudinary(
       })
       .catch(error => {
         console.error('Cloudinary upload error:', error);
-        reject(error);
+        // Fallback to server-side upload
+        console.log('Falling back to server-side upload...');
+        uploadToServer(file, folder)
+          .then(resolve)
+          .catch(reject);
       });
   });
 }
@@ -110,33 +114,64 @@ export async function uploadMultipleToCloudinary(
   return Promise.all(uploadPromises);
 }
 
+// Server-side upload function as fallback
+async function uploadToServer(file: File, folder: UploadFolder): Promise<CloudinaryUploadResult> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    
+    const response = await fetch('/api/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Server upload failed: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    return {
+      public_id: result.public_id || `server_${Date.now()}`,
+      secure_url: result.url,
+      width: result.width || 800,
+      height: result.height || 600,
+      format: file.name.split('.').pop() || 'unknown',
+      resource_type: 'image',
+      bytes: file.size,
+      original_filename: file.name,
+    };
+  } catch (error) {
+    console.error('Server upload failed:', error);
+    // Final fallback to data URL
+    return createLocalFileResult(file);
+  }
+}
+
 // Fallback function for when Cloudinary is not configured
 function createLocalFileResult(file: File): CloudinaryUploadResult {
   const fileId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const fileType = file.type.startsWith('image/') ? 'image' : 
                    file.type.startsWith('video/') ? 'video' : 'file';
   
-  // Create a more persistent blob URL
-  const blobUrl = URL.createObjectURL(file);
-  
-  // Store the blob URL in a global cache to prevent garbage collection
-  if (typeof window !== 'undefined') {
-    if (!window.__blobUrlCache) {
-      window.__blobUrlCache = new Map();
-    }
-    window.__blobUrlCache.set(fileId, { url: blobUrl, file });
-  }
-  
-  return {
-    public_id: fileId,
-    secure_url: blobUrl,
-    width: fileType === 'image' ? 800 : undefined,
-    height: fileType === 'image' ? 600 : undefined,
-    format: file.name.split('.').pop() || 'unknown',
-    resource_type: fileType,
-    bytes: file.size,
-    original_filename: file.name,
-  };
+  // Convert file to base64 data URL instead of blob URL
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      resolve({
+        public_id: fileId,
+        secure_url: dataUrl,
+        width: fileType === 'image' ? 800 : undefined,
+        height: fileType === 'image' ? 600 : undefined,
+        format: file.name.split('.').pop() || 'unknown',
+        resource_type: fileType,
+        bytes: file.size,
+        original_filename: file.name,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 // Add TypeScript declaration for the global cache
@@ -203,15 +238,20 @@ export async function uploadFormateurAvatar(file: File): Promise<CloudinaryUploa
   });
 }
 
-// Utility function to validate and fix blob URLs
+// Utility function to validate and fix image URLs
 export function validateBlobUrl(url: string): string {
   if (!url) {
     return DEFAULT_PLACEHOLDER_IMAGE;
   }
   
   if (url.startsWith('blob:')) {
-    // For blob URLs, we'll return a placeholder if there's an issue
-    // The actual validation will be handled by the Image component's onError
+    // Blob URLs don't work in production, return placeholder
+    console.warn('Blob URL detected, using placeholder');
+    return DEFAULT_PLACEHOLDER_IMAGE;
+  }
+  
+  if (url.startsWith('data:')) {
+    // Data URLs are fine
     return url;
   }
   

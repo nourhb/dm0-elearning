@@ -98,10 +98,13 @@ export function SimpleImageUpload({
         });
       }, 200);
 
-      // Create a local URL for the file (for demo purposes)
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate upload time
-      
-      const localUrl = URL.createObjectURL(file);
+      // Convert file to data URL for local storage
+      const reader = new FileReader();
+      const localUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
       
       clearInterval(progressInterval);
       setUploadProgress(100);

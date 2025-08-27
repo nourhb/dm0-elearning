@@ -61,14 +61,7 @@ export function CloudinaryImageUpload({
       }
     } catch (error) {
       console.error('Upload failed:', error);
-      
-      // Fallback to blob URL if Cloudinary fails
-      const blobUrl = URL.createObjectURL(file);
-      toast({
-        title: 'Upload Successful (Local)',
-        description: 'Image uploaded locally. This will persist until you change it.',
-      });
-      return blobUrl;
+      throw error; // Let the error be handled by the calling function
     }
   };
 
