@@ -149,12 +149,17 @@ export function initAdmin() {
  * This is the ONLY way to access admin services.
  */
 export const getAdminServices = () => {
-  if (!app) {
-    initAdmin();
+  try {
+    if (!app) {
+      initAdmin();
+    }
+    return { 
+      auth: getAuth(app),
+      db: getFirestore(app),
+      storage: getStorage(app),
+    };
+  } catch (error) {
+    console.error('Failed to initialize Firebase Admin services:', error);
+    throw new Error('Firebase Admin SDK not properly configured. Please check environment variables.');
   }
-  return { 
-    auth: getAuth(app),
-    db: getFirestore(app),
-    storage: getStorage(app),
-  };
 };

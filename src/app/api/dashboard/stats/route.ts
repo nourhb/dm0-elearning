@@ -4,7 +4,19 @@ import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
-    const { auth, db } = getAdminServices();
+    let auth, db;
+    try {
+      const services = getAdminServices();
+      auth = services.auth;
+      db = services.db;
+    } catch (error) {
+      console.error('Firebase Admin initialization failed:', error);
+      return NextResponse.json({ 
+        error: 'Database not available',
+        message: 'Firebase configuration is missing. Please check environment variables.',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 503 });
+    }
     
     // Get the auth token from cookies
     const cookieStore = await cookies();
