@@ -1,79 +1,128 @@
 
 'use client';
-import { useActionState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import {Button} from '@/components/ui/button';
-import {Card, CardContent, CardHeader, CardTitle, CardDescription} from '@/components/ui/card';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {signup} from './actions';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { setAuthCookie } from '../login/actions';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
 
 export default function SignupPage() {
-  const [state, formAction] = useActionState(signup, undefined);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { services } = useAuth();
+
+  const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!services) return;
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const displayName = formData.get('displayName') as string;
+    const role = formData.get('role') as string;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(services.auth, email, password);
+      const user = userCredential.user;
+
+      // Create user profile in Firestore
+      const userProfile = {
+        uid: user.uid,
+        email: email,
+        displayName: displayName,
+        role: role,
+        status: 'active',
+        createdAt: new Date(),
+        lastLoginAt: new Date()
+      };
+
+      await setDoc(doc(db, 'users', user.uid), userProfile);
+
+      // Get ID token and set cookie
+      const idToken = await user.getIdToken();
+      const res = await setAuthCookie(idToken);
+
+      if (res?.success) {
+        // Redirect based on role
+        const redirectPath = role === 'admin' ? '/admin' : 
+                           role === 'formateur' ? '/formateur' : '/student/dashboard';
+        router.push(redirectPath);
+        router.refresh();
+      } else {
+        setError(res?.message || 'An unknown error occurred during signup.');
+      }
+    } catch (error: any) {
+      console.error('Signup Error:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!services) {
+    return <div className="flex h-screen items-center justify-center"><p>Loading...</p></div>;
+  }
 
   return (
-    <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-        <div className="absolute inset-0 bg-zinc-900" />
-        <div className="relative z-20 flex items-center text-lg font-medium">
-          <Link href="/">EduPlatform</Link>
+    <Card className="mx-auto max-w-md border-0 shadow-lg sm:border">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold tracking-tight">Create Account</CardTitle>
+        <CardDescription>
+          Sign up for your DM0 E-Learning Platform account.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && <p className="mb-4 text-center text-sm text-destructive">{error}</p>}
+        <form onSubmit={handleSignup} className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="displayName">Full Name</Label>
+            <Input id="displayName" name="displayName" placeholder="John Doe" required />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" name="email" placeholder="john@example.com" required />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" name="password" type="password" placeholder="Create a strong password" required />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="role">Account Type</Label>
+            <Select name="role" required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="student">Student - Learn and enroll in courses</SelectItem>
+                <SelectItem value="formateur">Formateur - Create and manage courses</SelectItem>
+                <SelectItem value="admin">Admin - Platform management</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </Button>
+        </form>
+        <div className="mt-4 text-center text-sm">
+          Already have an account?{' '}
+          <Link href="/login" className="underline">
+            Sign in
+          </Link>
         </div>
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              &ldquo;This platform has completely transformed how I learn. The interactive courses and supportive community make education truly engaging.&rdquo;
-            </p>
-            <footer className="text-sm">Sofia Davis, Student</footer>
-          </blockquote>
-        </div>
-      </div>
-      <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create an account</CardTitle>
-              <CardDescription>
-                Enter your information below to create your account. All new accounts are created as students by default.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form action={formAction} className="grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="first-name">First name</Label>
-                    <Input id="first-name" name="firstName" placeholder="Max" required />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="last-name">Last name</Label>
-                    <Input id="last-name" name="lastName" placeholder="Robinson" required />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" name="email" placeholder="m@example.com" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required />
-                </div>
-                {/* Hidden role field - defaults to student */}
-                <input type="hidden" name="role" value="student" />
-                {state?.message && <p className="text-sm text-destructive">{state.message}</p>}
-                <Button type="submit" className="w-full">
-                  Create an account
-                </Button>
-              </form>
-              <div className="mt-4 text-center text-sm">
-                Already have an account?{' '}
-                <Link href="/login" className="underline">
-                  Sign in
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
