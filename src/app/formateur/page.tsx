@@ -112,8 +112,8 @@ function FormateurDashboardContent() {
       async function fetchDashboardData() {
         try {
           setLoading(true);
-          // ✅ OPTIMIZED: Single consolidated API call
-          const res = await fetch('/api/dashboard/overview', { 
+          // ✅ OPTIMIZED: Formateur-specific API call
+          const res = await fetch('/api/dashboard/formateur', { 
             cache: 'force-cache',
             next: { revalidate: 60 } // Cache for 1 minute
           });
