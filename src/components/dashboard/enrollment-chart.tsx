@@ -21,7 +21,10 @@ export function EnrollmentChart({ courses = [] }: EnrollmentChartProps) {
   if (!courses || courses.length === 0) {
     return (
       <div className="flex items-center justify-center h-[200px] text-muted-foreground">
-        No course data available
+        <div className="text-center">
+          <p className="text-sm">No course data available</p>
+          <p className="text-xs text-muted-foreground mt-1">Courses will appear here once they are published</p>
+        </div>
       </div>
     );
   }

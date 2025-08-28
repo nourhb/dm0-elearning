@@ -21,7 +21,10 @@ export function UserSignupChart({ users = [] }: UserSignupChartProps) {
   if (!users || users.length === 0) {
     return (
       <div className="flex items-center justify-center h-[200px] text-muted-foreground">
-        No user data available
+        <div className="text-center">
+          <p className="text-sm">No user data available</p>
+          <p className="text-xs text-muted-foreground mt-1">Users will appear here once they sign up</p>
+        </div>
       </div>
     );
   }

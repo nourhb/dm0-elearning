@@ -87,7 +87,17 @@ export function ModernAdminDashboard() {
         const res = await fetch('/api/dashboard/admin', {
           credentials: 'include'
         });
+        
+        if (!res.ok) {
+          throw new Error(`API request failed: ${res.status} ${res.statusText}`);
+        }
+        
         const data = await res.json();
+        
+        console.log('Admin dashboard data received:', data);
+        console.log('Users count:', data.users?.length || 0);
+        console.log('Courses count:', data.courses?.length || 0);
+        console.log('Enrollments count:', data.enrollmentRequests?.length || 0);
         
         setUsers(data.users || []);
         setCourses(data.courses || []);
@@ -323,7 +333,7 @@ export function ModernAdminDashboard() {
                  </CardHeader>
                  <CardContent className="p-4 sm:p-6">
                    <div className="h-64 sm:h-80">
-                     <UserSignupChart />
+                     <UserSignupChart users={users} />
                    </div>
                  </CardContent>
                </Card>
@@ -341,7 +351,7 @@ export function ModernAdminDashboard() {
                  </CardHeader>
                  <CardContent className="p-4 sm:p-6">
                    <div className="h-64 sm:h-80">
-                     <EnrollmentChart />
+                     <EnrollmentChart courses={courses} />
                    </div>
                  </CardContent>
                </Card>

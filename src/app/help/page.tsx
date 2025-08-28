@@ -112,7 +112,7 @@ function HelpPageContent() {
       title: t('viewTutorials'),
       description: t('viewTutorialsDescription'),
       icon: Video,
-      href: '/tutorials',
+      href: '/courses',
       color: 'bg-orange-500'
     }
   ];

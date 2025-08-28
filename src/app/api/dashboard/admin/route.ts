@@ -65,13 +65,21 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    return NextResponse.json({
+    const responseData = {
       stats,
       courses,
       users,
       enrollmentRequests: enrollments,
       roleDistribution: stats.roleDistribution
+    };
+    
+    console.log('Admin API returning data:', {
+      usersCount: users.length,
+      coursesCount: courses.length,
+      enrollmentsCount: enrollments.length
     });
+    
+    return NextResponse.json(responseData);
 
   } catch (error) {
     console.error('Error in admin dashboard:', error);
