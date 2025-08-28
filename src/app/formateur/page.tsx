@@ -215,7 +215,7 @@ function FormateurDashboardContent() {
 
         {/* Enhanced Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden h-[200px]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
@@ -229,7 +229,7 @@ function FormateurDashboardContent() {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden h-[200px]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Students</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -243,7 +243,7 @@ function FormateurDashboardContent() {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden h-[200px]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
@@ -259,7 +259,7 @@ function FormateurDashboardContent() {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden h-[200px]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
               <Star className="h-4 w-4 text-muted-foreground" />

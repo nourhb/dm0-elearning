@@ -46,7 +46,7 @@ function StudentDashboardContent({ courses, completedCount, achievements }: Stud
         <h2 className="text-3xl font-bold tracking-tight">{t('welcomeBack')}, {user?.displayName?.split(' ')[0]}!</h2>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="h-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('coursesInProgress')}</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
@@ -56,7 +56,7 @@ function StudentDashboardContent({ courses, completedCount, achievements }: Stud
             <p className="text-xs text-muted-foreground">{t('keepUpGreatWork')}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="h-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('completedCourses')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />

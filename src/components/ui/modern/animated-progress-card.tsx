@@ -73,7 +73,7 @@ export function AnimatedProgressCard({
       transition={{ duration: 0.5 }}
       className={cn('group', className)}
     >
-      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 h-[200px]">
         <div className={cn(
           'absolute top-0 right-0 w-32 h-32 rounded-full opacity-10 -translate-y-16 translate-x-16',
           `bg-gradient-to-br ${colorVariants[color]}`
