@@ -163,41 +163,42 @@ export function ModernAdminDashboard() {
 
   if (loading) {
     return (
-      <div className="w-full flex-1 space-y-6 p-4 md:p-8 pt-6">
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
+      <div className="w-full flex-1 space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6 lg:p-8 pt-4 sm:pt-6">
+        <div className="space-y-3 sm:space-y-4">
+          <Skeleton className="h-6 sm:h-8 w-48 sm:w-64" />
+          <Skeleton className="h-3 sm:h-4 w-72 sm:w-96" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32" />
+            <Skeleton key={i} className="h-24 sm:h-32" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton className="h-80" />
-          <Skeleton className="h-80" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <Skeleton className="h-64 sm:h-80" />
+          <Skeleton className="h-64 sm:h-80" />
         </div>
       </div>
     );
   }
 
-  return (
+    return (
     <>
-      <div className="w-full flex-1 space-y-6 p-4 md:p-8 pt-6">
+      <div className="w-full flex-1 space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6 lg:p-8 pt-4 sm:pt-6">
         {/* Modern Header with Welcome Message */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Admin Command Center
             </h1>
-            <p className="text-muted-foreground text-lg mt-2">
+            <p className="text-muted-foreground text-sm sm:text-base lg:text-lg mt-1 sm:mt-2">
               Welcome back, {user?.displayName}. Here's your platform overview.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                          <Button 
                variant="outline" 
                size="sm"
+               className="w-full sm:w-auto"
                                onClick={async () => {
                   try {
                     setLoading(true);
@@ -224,19 +225,22 @@ export function ModernAdminDashboard() {
                   }
                 }}
                                disabled={loading}
-             >
+              >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
-            <Button onClick={() => setIsCreateUserDialogOpen(true)}>
+            <Button 
+              onClick={() => setIsCreateUserDialogOpen(true)}
+              className="w-full sm:w-auto"
+            >
               <UserPlus className="mr-2 h-4 w-4" />
-              Create User
+              <span className="hidden sm:inline">Create User</span>
             </Button>
           </div>
         </div>
 
         {/* Enhanced Stats Cards with Real Data */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           <AnimatedProgressCard
             title="Total Users"
             value={realStats.totalUsers}
@@ -279,206 +283,215 @@ export function ModernAdminDashboard() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Overview
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-10">
+            <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-1">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Users
+            <TabsTrigger value="users" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-1">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Users</span>
+              <span className="sm:hidden">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="courses" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Courses
+            <TabsTrigger value="courses" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-1">
+              <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Courses</span>
+              <span className="sm:hidden">Courses</span>
             </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
-              Achievements
+            <TabsTrigger value="achievements" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-1">
+              <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Achievements</span>
+              <span className="sm:hidden">Achievements</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* User Activity Chart */}
-              <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    User Activity
-                  </CardTitle>
-                  <CardDescription>
-                    Platform activity over the last 30 days
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <UserSignupChart />
-                </CardContent>
-              </Card>
+                     {/* Overview Tab */}
+           <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+               {/* User Activity Chart */}
+               <Card className="border-0 shadow-lg">
+                 <CardHeader className="p-4 sm:p-6">
+                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                     <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+                     User Activity
+                   </CardTitle>
+                   <CardDescription className="text-sm">
+                     Platform activity over the last 30 days
+                   </CardDescription>
+                 </CardHeader>
+                 <CardContent className="p-4 sm:p-6">
+                   <div className="h-64 sm:h-80">
+                     <UserSignupChart />
+                   </div>
+                 </CardContent>
+               </Card>
 
-              {/* Course Performance */}
-              <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Course Performance
-                  </CardTitle>
-                  <CardDescription>
-                    Top performing courses by enrollment
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <EnrollmentChart />
-                </CardContent>
-              </Card>
-            </div>
+               {/* Course Performance */}
+               <Card className="border-0 shadow-lg">
+                 <CardHeader className="p-4 sm:p-6">
+                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                     <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                     Course Performance
+                   </CardTitle>
+                   <CardDescription className="text-sm">
+                     Top performing courses by enrollment
+                   </CardDescription>
+                 </CardHeader>
+                 <CardContent className="p-4 sm:p-6">
+                   <div className="h-64 sm:h-80">
+                     <EnrollmentChart />
+                   </div>
+                 </CardContent>
+               </Card>
+             </div>
 
-            {/* Quick Actions */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
-                  Quick Actions
-                </CardTitle>
-                <CardDescription>
-                  Common administrative tasks
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button variant="outline" className="h-20 flex flex-col gap-2">
-                    <UserPlus className="h-6 w-6" />
-                    <span>Create User</span>
-                  </Button>
-                  <Button variant="outline" className="h-20 flex flex-col gap-2">
-                    <BookOpen className="h-6 w-6" />
-                    <span>Review Courses</span>
-                  </Button>
-                  <Button variant="outline" className="h-20 flex flex-col gap-2">
-                    <Settings className="h-6 w-6" />
-                    <span>System Settings</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+             {/* Quick Actions */}
+             <Card className="border-0 shadow-lg">
+               <CardHeader className="p-4 sm:p-6">
+                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                   <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
+                   Quick Actions
+                 </CardTitle>
+                 <CardDescription className="text-sm">
+                   Common administrative tasks
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="p-4 sm:p-6">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                   <Button variant="outline" className="h-16 sm:h-20 flex flex-col gap-2 p-3">
+                     <UserPlus className="h-5 w-5 sm:h-6 sm:w-6" />
+                     <span className="text-xs sm:text-sm">Create User</span>
+                   </Button>
+                   <Button variant="outline" className="h-16 sm:h-20 flex flex-col gap-2 p-3">
+                     <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
+                     <span className="text-xs sm:text-sm">Review Courses</span>
+                   </Button>
+                   <Button variant="outline" className="h-16 sm:h-20 flex flex-col gap-2 p-3">
+                     <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
+                     <span className="text-xs sm:text-sm">System Settings</span>
+                   </Button>
+                 </div>
+               </CardContent>
+             </Card>
+           </TabsContent>
 
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  User Management
-                </CardTitle>
-                <CardDescription>
-                  Manage platform users and their roles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {users.slice(0, 10).map((user) => (
-                    <div key={user.uid} className="flex items-center justify-between p-4 border rounded-lg">
-                                             <div className="flex items-center space-x-4">
-                         <Avatar>
-                           <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
-                         </Avatar>
-                        <div>
-                          <p className="font-medium">{user.displayName}</p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                          {user.role}
-                        </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setIsManageUserDialogOpen(true);
-                          }}
-                        >
-                          Manage
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                     {/* Users Tab */}
+           <TabsContent value="users" className="space-y-4 sm:space-y-6">
+             <Card className="border-0 shadow-lg">
+               <CardHeader className="p-4 sm:p-6">
+                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                   <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+                   User Management
+                 </CardTitle>
+                 <CardDescription className="text-sm">
+                   Manage platform users and their roles
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="p-4 sm:p-6">
+                 <div className="space-y-3 sm:space-y-4">
+                   {users.slice(0, 10).map((user) => (
+                     <div key={user.uid} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 border rounded-lg gap-3 sm:gap-4">
+                                              <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+                          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                            <AvatarFallback className="text-xs sm:text-sm">{user.displayName?.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                         <div className="min-w-0 flex-1">
+                           <p className="font-medium text-sm sm:text-base truncate">{user.displayName}</p>
+                           <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
+                         </div>
+                       </div>
+                       <div className="flex items-center space-x-2 w-full sm:w-auto">
+                         <Badge variant={user.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                           {user.role}
+                         </Badge>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           className="text-xs px-2 sm:px-3"
+                           onClick={() => {
+                             setSelectedUser(user);
+                             setIsManageUserDialogOpen(true);
+                           }}
+                         >
+                           Manage
+                         </Button>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </CardContent>
+             </Card>
+           </TabsContent>
 
-          {/* Courses Tab */}
-          <TabsContent value="courses" className="space-y-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Course Management
-                </CardTitle>
-                <CardDescription>
-                  Review and manage platform courses
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {courses.slice(0, 6).map((course) => (
-                    <Card key={course.id} className="border-0 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
-                                                     <div className="flex items-center justify-between">
-                             <h3 className="font-semibold text-lg">{course.title}</h3>
-                             <Badge variant={course.status === 'Published' ? 'default' : 'secondary'}>
-                               {course.status}
-                             </Badge>
-                           </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {course.description}
-                          </p>
-                                                     <div className="flex items-center justify-between text-sm">
-                             <span className="text-muted-foreground">
-                               Instructor ID: {course.instructorId}
+                     {/* Courses Tab */}
+           <TabsContent value="courses" className="space-y-4 sm:space-y-6">
+             <Card className="border-0 shadow-lg">
+               <CardHeader className="p-4 sm:p-6">
+                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                   <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
+                   Course Management
+                 </CardTitle>
+                 <CardDescription className="text-sm">
+                   Review and manage platform courses
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="p-4 sm:p-6">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                   {courses.slice(0, 6).map((course) => (
+                     <Card key={course.id} className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                       <CardContent className="p-3 sm:p-4">
+                         <div className="space-y-2 sm:space-y-3">
+                                                      <div className="flex items-center justify-between">
+                              <h3 className="font-semibold text-sm sm:text-base lg:text-lg truncate">{course.title}</h3>
+                              <Badge variant={course.status === 'Published' ? 'default' : 'secondary'} className="text-xs">
+                                {course.status}
+                              </Badge>
+                            </div>
+                           <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                             {course.description}
+                           </p>
+                                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs sm:text-sm gap-1 sm:gap-0">
+                              <span className="text-muted-foreground truncate">
+                                Instructor ID: {course.instructorId}
+                              </span>
+                             <span className="font-medium">
+                               {course.studentCount || 0} students
                              </span>
-                            <span className="font-medium">
-                              {course.studentCount || 0} students
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                           </div>
+                         </div>
+                       </CardContent>
+                     </Card>
+                   ))}
+                 </div>
+               </CardContent>
+             </Card>
+           </TabsContent>
 
-          {/* Achievements Tab */}
-          <TabsContent value="achievements" className="space-y-6">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Admin Achievements
-                </CardTitle>
-                <CardDescription>
-                  Track your administrative milestones
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <AchievementProgress 
-                    unlocked={adminAchievements.filter(a => a.isUnlocked).length}
-                    total={adminAchievements.length}
-                  />
-                  <AchievementGrid achievements={adminAchievements} />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                     {/* Achievements Tab */}
+           <TabsContent value="achievements" className="space-y-4 sm:space-y-6">
+             <Card className="border-0 shadow-lg">
+               <CardHeader className="p-4 sm:p-6">
+                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                   <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
+                   Admin Achievements
+                 </CardTitle>
+                 <CardDescription className="text-sm">
+                   Track your administrative milestones
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="p-4 sm:p-6">
+                 <div className="space-y-4 sm:space-y-6">
+                   <AchievementProgress 
+                     unlocked={adminAchievements.filter(a => a.isUnlocked).length}
+                     total={adminAchievements.length}
+                   />
+                   <AchievementGrid achievements={adminAchievements} />
+                 </div>
+               </CardContent>
+             </Card>
+           </TabsContent>
         </Tabs>
       </div>
 
