@@ -3,6 +3,8 @@ import { getAdminServices } from '@/lib/firebase-admin';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Admin dashboard API called');
+    
     // Check for authentication
     const authHeader = request.headers.get('authorization');
     const cookieHeader = request.headers.get('cookie');
@@ -10,12 +12,14 @@ export async function GET(request: NextRequest) {
     const isAuthenticated = authHeader || cookieHeader;
     
     if (!isAuthenticated) {
+      console.log('Admin dashboard API: Unauthorized access attempt');
       return NextResponse.json({ 
         error: 'Unauthorized',
         needsAuth: true
       }, { status: 401 });
     }
 
+    console.log('Admin dashboard API: Initializing Firebase Admin');
     const { db } = getAdminServices();
     
     // Fetch admin-specific data (all system data)
@@ -79,6 +83,7 @@ export async function GET(request: NextRequest) {
       enrollmentsCount: enrollments.length
     });
     
+    console.log('Admin dashboard API: Successfully returning response');
     return NextResponse.json(responseData);
 
   } catch (error) {
