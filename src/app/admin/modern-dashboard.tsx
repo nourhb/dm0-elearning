@@ -81,10 +81,10 @@ export function ModernAdminDashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      // TEMPORARY: Allow data fetching without strict authentication
+      // ✅ OPTIMIZED: Admin-specific API call
       try {
         setLoading(true);
-        const res = await fetch('/api/dashboard/overview', {
+        const res = await fetch('/api/dashboard/admin', {
           credentials: 'include'
         });
         const data = await res.json();
@@ -201,7 +201,7 @@ export function ModernAdminDashboard() {
                                onClick={async () => {
                   try {
                     setLoading(true);
-                    const res = await fetch('/api/dashboard/overview', {
+                    const res = await fetch('/api/dashboard/admin', {
                       credentials: 'include'
                     });
                     const data = await res.json();

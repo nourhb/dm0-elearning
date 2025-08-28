@@ -35,7 +35,7 @@ export default function TestAuthSimple() {
 
   const testDashboard = async () => {
     try {
-      const res = await fetch('/api/dashboard/overview', {
+      const res = await fetch('/api/dashboard/admin', {
         credentials: 'include'
       });
       
