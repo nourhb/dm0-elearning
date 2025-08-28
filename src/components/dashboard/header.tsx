@@ -452,21 +452,21 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+      <div className="container flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <SidebarTrigger className="-ml-1" />
           
           {/* Search Bar with Enhanced UX */}
-          <div className="relative hidden md:block">
+          <div className="relative hidden sm:block">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t('searchCourses')}
-              className="w-80 pl-10 transition-all duration-200 focus:w-96"
+              className="w-60 sm:w-80 pl-10 transition-all duration-200 focus:w-72 sm:focus:w-96"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* Language Selector with Enhanced UX */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -474,12 +474,12 @@ export function Header() {
                 variant="ghost" 
                 size="icon" 
                 aria-label="Languages"
-                className="h-10 w-10 rounded-lg hover:bg-accent focus-ring transition-all duration-200 hover:scale-105 active:scale-95"
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg hover:bg-accent focus-ring transition-all duration-200 hover:scale-105 active:scale-95"
               >
-                <Languages className="h-5 w-5" />
+                <Languages className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-40 sm:w-48">
               <DropdownMenuLabel>Select Language</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
@@ -520,21 +520,21 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
-                className="relative h-10 w-10 rounded-full hover:bg-accent focus-ring p-0 transition-all duration-200 hover:scale-105 active:scale-95 group"
+                className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-accent focus-ring p-0 transition-all duration-200 hover:scale-105 active:scale-95 group"
               >
-                <Avatar className="h-10 w-10 avatar-modern group-hover:ring-2 group-hover:ring-primary/20 transition-all duration-200">
+                <Avatar className="h-8 w-8 sm:h-10 sm:w-10 avatar-modern group-hover:ring-2 group-hover:ring-primary/20 transition-all duration-200">
                   <AvatarImage 
                     src={getSafeAvatarUrl(user?.photoURL)} 
                     alt={user?.displayName || 'User'} 
                     className="transition-transform duration-200 group-hover:scale-110"
                   />
-                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs sm:text-sm">
                     {user?.displayName?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 p-2" align="end">
+            <DropdownMenuContent className="w-56 sm:w-64 p-2" align="end">
               <DropdownMenuLabel className="p-3">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-semibold leading-none text-foreground">

@@ -195,32 +195,32 @@ function CoursesPageContent() {
   ];
 
   return (
-    <div className="w-full flex-1 space-y-6 p-4 md:p-8 pt-6">
+    <div className="w-full flex-1 space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6 lg:p-8 pt-4 sm:pt-6">
       {/* Udemy-like Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white mb-8">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-white mb-4 sm:mb-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
             Unlock Your Potential
           </h1>
-          <p className="text-xl mb-8 text-blue-100">
+          <p className="text-lg sm:text-xl mb-4 sm:mb-6 lg:mb-8 text-blue-100">
             Discover thousands of courses from expert instructors
           </p>
           
           {/* Enhanced Search Bar */}
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative max-w-sm sm:max-w-md lg:max-w-2xl mx-auto">
+            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             <Input
               placeholder="Search for courses..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-12 h-14 text-lg bg-white/10 border-white/20 text-white placeholder:text-blue-200 focus:bg-white/20 focus:border-white/40"
+              className="pl-10 sm:pl-12 pr-10 sm:pr-12 h-12 sm:h-14 text-base sm:text-lg bg-white/10 border-white/20 text-white placeholder:text-blue-200 focus:bg-white/20 focus:border-white/40"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white"
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white"
               >
-                <XCircle className="h-5 w-5" />
+                <XCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             )}
           </div>
@@ -228,11 +228,11 @@ function CoursesPageContent() {
       </div>
 
       {/* Filters and Controls */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 items-start lg:items-center justify-between">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           {/* Category Filter */}
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-36 sm:w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -240,7 +240,7 @@ function CoursesPageContent() {
                 <SelectItem key={category.value} value={category.value}>
                   <div className="flex items-center gap-2">
                     {category.icon}
-                    {category.label}
+                    <span className="truncate">{category.label}</span>
                   </div>
                 </SelectItem>
               ))}
@@ -249,7 +249,7 @@ function CoursesPageContent() {
 
           {/* Level Filter */}
           <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-32 sm:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -264,10 +264,10 @@ function CoursesPageContent() {
           {/* Sort Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4" />
-                Sort by
-                <ChevronDown className="h-4 w-4" />
+              <Button variant="outline" className="flex items-center gap-2 text-xs sm:text-sm">
+                <SlidersHorizontal className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Sort by</span>
+                <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -288,20 +288,22 @@ function CoursesPageContent() {
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('grid')}
+            className="h-8 w-8 sm:h-10 sm:w-10"
           >
-            <Grid3X3 className="h-4 w-4" />
+            <Grid3X3 className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
+            className="h-8 w-8 sm:h-10 sm:w-10"
           >
-            <List className="h-4 w-4" />
+            <List className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
@@ -325,8 +327,8 @@ function CoursesPageContent() {
        
       {loading ? (
         <div className={viewMode === 'grid' 
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          : "space-y-4"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
+          : "space-y-3 sm:space-y-4"
         }>
           {[...Array(8)].map((_, i) => (
             <div key={i} className={viewMode === 'grid' ? '' : 'flex gap-4'}>
@@ -343,8 +345,8 @@ function CoursesPageContent() {
         </div>
       ) : filteredAndSortedCourses.length > 0 ? (
         <div className={viewMode === 'grid' 
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          : "space-y-4"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
+          : "space-y-3 sm:space-y-4"
         }>
           {filteredAndSortedCourses.map(course => (
             <div key={course.id} className={viewMode === 'list' ? 'flex gap-4' : ''}>
@@ -393,9 +395,9 @@ function CoursesPageContent() {
 
       {/* Featured Categories */}
       {!searchTerm && filteredAndSortedCourses.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">Popular Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="mt-8 sm:mt-12">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Popular Categories</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
             {categories.slice(1).map((category) => (
               <Card 
                 key={category.value}
