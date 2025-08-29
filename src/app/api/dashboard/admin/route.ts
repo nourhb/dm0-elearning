@@ -5,54 +5,86 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Admin dashboard API called');
     
-    // Check for authentication
+    // Simple authentication check - just verify we have some form of auth
     const authHeader = request.headers.get('authorization');
     const cookieHeader = request.headers.get('cookie');
     
     const isAuthenticated = authHeader || cookieHeader;
     
     if (!isAuthenticated) {
-      console.log('Admin dashboard API: Unauthorized access attempt');
+      console.log('Admin dashboard API: No authentication provided');
       return NextResponse.json({ 
         error: 'Unauthorized',
         needsAuth: true
       }, { status: 401 });
     }
 
+    console.log('Admin dashboard API: Authentication check passed');
     console.log('Admin dashboard API: Initializing Firebase Admin');
-    const { db } = getAdminServices();
     
-    // Fetch admin-specific data (all system data)
-    const [coursesSnapshot, usersSnapshot, enrollmentsSnapshot] = await Promise.allSettled([
-      db.collection('courses').limit(20).get(),
-      db.collection('users').limit(50).get(),
-      db.collection('enrollments').limit(20).get()
-    ]);
+    // Initialize Firebase services with error handling
+    let db;
+    try {
+      const services = getAdminServices();
+      db = services.db;
+    } catch (firebaseError) {
+      console.error('Firebase initialization failed:', firebaseError);
+      return NextResponse.json(
+        { 
+          error: 'Database connection failed',
+          details: firebaseError instanceof Error ? firebaseError.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
+    }
+    
+    // Fetch admin-specific data (all system data) with better error handling
+    let courses: any[] = [];
+    let users: any[] = [];
+    let enrollments: any[] = [];
 
-    // Process results safely
-    const courses = coursesSnapshot.status === 'fulfilled' 
-      ? coursesSnapshot.value.docs.map((doc: any) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate?.() || new Date()
-        }))
-      : [];
+    try {
+      const [coursesSnapshot, usersSnapshot, enrollmentsSnapshot] = await Promise.allSettled([
+        db.collection('courses').limit(20).get(),
+        db.collection('users').limit(50).get(),
+        db.collection('enrollments').limit(20).get()
+      ]);
 
-    const users = usersSnapshot.status === 'fulfilled'
-      ? usersSnapshot.value.docs.map((doc: any) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate?.() || new Date()
-        }))
-      : [];
+      // Process results safely
+      courses = coursesSnapshot.status === 'fulfilled' 
+        ? coursesSnapshot.value.docs.map((doc: any) => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate?.() || new Date()
+          }))
+        : [];
 
-    const enrollments = enrollmentsSnapshot.status === 'fulfilled'
-      ? enrollmentsSnapshot.value.docs.map((doc: any) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate?.() || new Date()
-        }))
-      : [];
+      users = usersSnapshot.status === 'fulfilled'
+        ? usersSnapshot.value.docs.map((doc: any) => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate?.() || new Date()
+          }))
+        : [];
+
+      enrollments = enrollmentsSnapshot.status === 'fulfilled'
+        ? enrollmentsSnapshot.value.docs.map((doc: any) => ({
+            id: doc.id,
+            ...doc.data(),
+            createdAt: doc.data().createdAt?.toDate?.() || new Date()
+          }))
+        : [];
+
+    } catch (dbError) {
+      console.error('Database query failed:', dbError);
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch data from database',
+          details: dbError instanceof Error ? dbError.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
+    }
 
     // Calculate admin stats
     const stats = {

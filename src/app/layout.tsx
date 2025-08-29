@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { ChunkReloader } from '@/components/chunk-reloader';
 import { I18nProvider } from '@/components/i18n-provider';
 import ErrorBoundary from '@/components/error-boundary';
+import { EducationalChatbot } from '@/components/chat/educational-chatbot';
 import './globals.css';
 // i18n is initialized on the client in AppLayoutClient
 import { Outfit, Manrope, DM_Sans } from 'next/font/google';
@@ -44,6 +45,7 @@ export default function RootLayout({
                 <AuthProvider>
                   <ChunkReloader />
                   {children}
+                  <EducationalChatbot />
                   <Toaster />
                 </AuthProvider>
               </I18nProvider>

@@ -9,20 +9,36 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import type { ChatInput } from '@/ai/flows/grok-chat.schema';
-import { Bot, Send, X, Loader2 } from 'lucide-react';
+import { Bot, Send, X, Loader2, Smile } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'model';
   content: string;
 }
 
+// Common emojis for quick access
+const commonEmojis = [
+  '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+  '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+  '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
+  '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+  '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬',
+  '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗',
+  '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😯', '😦', '😧',
+  '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢',
+  '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '💩', '👻', '💀',
+  '☠️', '👽', '👾', '🤖', '😺', '😸', '😹', '😻', '😼', '😽'
+];
+
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { user } = useAuth();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -37,8 +53,27 @@ export function ChatWidget() {
     }
   }, [isOpen]);
 
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const toggleOpen = () => {
     setIsOpen(prev => !prev);
+  };
+
+  const addEmoji = (emoji: string) => {
+    setInput(prev => prev + emoji);
+    setShowEmojiPicker(false);
   };
 
   const handleSend = async () => {
@@ -142,10 +177,23 @@ export function ChatWidget() {
                             handleSend();
                         }
                     }}
-                    placeholder="Ask anything..."
-                    className="pr-16"
+                    placeholder="Tapez votre message..."
+                    className="pr-20"
                     rows={1}
                   />
+                  
+                  {/* Emoji Button */}
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="absolute right-12 top-1/2 -translate-y-1/2 h-8 w-8"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  >
+                    <Smile className="h-4 w-4" />
+                  </Button>
+
+                  {/* Send Button */}
                   <Button
                     type="submit"
                     size="icon"
@@ -155,6 +203,32 @@ export function ChatWidget() {
                   >
                     <Send className="h-4 w-4" />
                   </Button>
+
+                  {/* Emoji Picker */}
+                  <AnimatePresence>
+                    {showEmojiPicker && (
+                      <motion.div
+                        ref={emojiPickerRef}
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute bottom-full right-0 mb-2 p-3 bg-background border rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                      >
+                        <div className="grid grid-cols-8 gap-1">
+                          {commonEmojis.map((emoji, index) => (
+                            <button
+                              key={index}
+                              onClick={() => addEmoji(emoji)}
+                              className="w-8 h-8 flex items-center justify-center hover:bg-muted rounded text-lg transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>

@@ -181,9 +181,10 @@ export function AppSidebar() {
               </div>
             )}
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-xs sm:text-sm font-semibold text-foreground truncate">DigitalMen0</span>
-            <span className="text-xs text-muted-foreground truncate">Learning Hub</span>
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center justify-center w-full">
+              <LogoIcon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            </div>
           </div>
         </div>
       </SidebarHeader>

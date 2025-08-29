@@ -5,7 +5,8 @@ export async function GET() {
     return NextResponse.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      message: 'Server is running properly'
+      message: 'Server is running properly',
+      environment: process.env.NODE_ENV || 'development'
     });
   } catch (error) {
     return NextResponse.json({

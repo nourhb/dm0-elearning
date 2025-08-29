@@ -25,6 +25,7 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   services: FirebaseServices | null;
+  refreshToken: () => Promise<string | null>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,17 +37,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [services] = useState<FirebaseServices | null>({ app, auth: clientAuth, db });
   const router = useRouter();
 
+  // Function to refresh the user's token
+  const refreshToken = async (): Promise<string | null> => {
+    if (!user) return null;
+    
+    try {
+      const token = await user.getIdToken(true); // Force refresh
+      console.log('Token refreshed successfully');
+      return token;
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(clientAuth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-            const tokenResult = await firebaseUser.getIdTokenResult();
-            const claimsRole = (tokenResult.claims.role as string) || 'student';
-            setUser({ ...firebaseUser, role: claimsRole });
+          // Get a fresh token
+          const token = await firebaseUser.getIdToken(true);
+          console.log('User authenticated, token obtained');
+          
+          const tokenResult = await firebaseUser.getIdTokenResult();
+          const claimsRole = (tokenResult.claims.role as string) || 'student';
+          setUser({ ...firebaseUser, role: claimsRole });
         } catch (error) {
-            console.error("Error getting user token:", error);
-            // If token fails, treat as logged out
-            setUser(null);
+          console.error("Error getting user token:", error);
+          // If token fails, treat as logged out
+          setUser(null);
         }
       } else {
         setUser(null);
@@ -73,7 +92,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
-  const value = useMemo(() => ({ user, loading, logout, services }), [user, loading, logout, services]);
+  const value = useMemo(() => ({ 
+    user, 
+    loading, 
+    logout, 
+    services,
+    refreshToken 
+  }), [user, loading, logout, services, refreshToken]);
 
   return (
     <AuthContext.Provider value={value}>
